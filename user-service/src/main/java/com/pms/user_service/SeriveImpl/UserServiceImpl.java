@@ -62,8 +62,6 @@ public class UserServiceImpl implements UserService {
                 loginRequest.getPassword()
         ).orElseThrow(() -> new RuntimeException("Invalid credentials"));
         if (!passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())) {
-            System.out.println(loginRequest.getPassword());
-            System.out.println(user.getPassword());
             throw new RuntimeException("Invalid credentials");
         }
         String token = jwtUtil.generateToken(user.getCustomerId(), user.getUserId());
