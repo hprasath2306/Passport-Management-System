@@ -1,5 +1,7 @@
 package com.pms.user_service.Controller;
 
+import com.pms.user_service.DTO.LoginRequestDto;
+import com.pms.user_service.DTO.LoginResponseDto;
 import com.pms.user_service.DTO.UserDto;
 import com.pms.user_service.DTO.UserResponseDto;
 import com.pms.user_service.Entity.User;
@@ -12,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/users")
+@RequestMapping("/api")
 public class UserController {
 
     private final UserService userService;
@@ -22,7 +24,7 @@ public class UserController {
         this.userService = userService;
     }
 
-    @GetMapping
+    @GetMapping("/users")
     public ResponseEntity<List<UserResponseDto>> getAllUsers() {
         List<User> users = userService.getAllUsers();
         List<UserResponseDto> response = users.stream()
@@ -31,15 +33,21 @@ public class UserController {
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/user/{id}")
     public ResponseEntity<User> getUserById(@PathVariable String id) {
         return ResponseEntity.ok(userService.getUserById(id));
     }
 
-    @PostMapping
+    @PostMapping("/auth/register")
     public ResponseEntity<UserResponseDto> createUser(@Valid @RequestBody UserDto userDto) {
         User createdUser = userService.createUser(userDto);
         return ResponseEntity.ok(new UserResponseDto(createdUser));
+    }
+
+    @PostMapping("/auth/login")
+    public ResponseEntity<LoginResponseDto> login(@Valid @RequestBody LoginRequestDto loginRequest) {
+        LoginResponseDto response = userService.login(loginRequest);
+        return ResponseEntity.ok(response);
     }
 
 }

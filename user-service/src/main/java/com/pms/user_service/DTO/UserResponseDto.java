@@ -18,7 +18,6 @@ public class UserResponseDto {
     public String pincode;
     public String city;
     public String state;
-    public boolean isEmailVerified;
     public User.CitizenType citizenType;
     public User.Occupation occupation;
     public User.RegistrationType registrationType;
@@ -37,7 +36,6 @@ public class UserResponseDto {
         this.city = user.getCity();
         this.state = user.getState();
         this.pincode = user.getPincode();
-        this.isEmailVerified = user.getIsEmailVerified();
         this.citizenType = user.getCitizenType();
         this.occupation = user.getOccupation();
         this.registrationType = user.getRegistrationType();

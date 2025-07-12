@@ -44,8 +44,7 @@ public class User {
     @NotBlank(message = "Phone number is required")
     private String phoneNumber;
 
-    @Column(name = "email", nullable = false, unique = true)
-    @NotBlank(message = "Email is required")
+    @Column(name = "email", nullable = true)
     @Email(message = "Email should be valid")
     private String email;
 
@@ -87,15 +86,6 @@ public class User {
     @Column(name = "updated_at", nullable = true)
     private LocalDateTime updatedAt;
 
-    @Column(name = "is_email_verified", nullable = false)
-    private Boolean isEmailVerified = false;
-
-    @Column(name = "email_verification_token", length = 255)
-    private String emailVerificationToken;
-
-    @Column(name = "email_verification_token_expiry")
-    private LocalDateTime emailVerificationTokenExpiry;
-
     // Enums
     public enum CitizenType {
         INFANT, CHILDREN, TEEN, ADULT, SENIOR_CITIZEN
@@ -110,9 +100,7 @@ public class User {
     }
 
     // Constructors
-    public User() {
-        this.isEmailVerified = false;
-    }
+    public User() {}
 
     public User(String userId, String customerId, String firstName, String lastName,
                 LocalDate dateOfBirth, Integer age, CitizenType citizenType,
@@ -135,7 +123,6 @@ public class User {
         this.pincode = pincode;
         this.occupation = occupation;
         this.registrationType = registrationType;
-        this.isEmailVerified = false;
     }
 
     // Getters and Setters
@@ -283,30 +270,6 @@ public class User {
         this.updatedAt = updatedAt;
     }
 
-    public Boolean getIsEmailVerified() {
-        return isEmailVerified;
-    }
-
-    public void setIsEmailVerified(Boolean isEmailVerified) {
-        this.isEmailVerified = isEmailVerified;
-    }
-
-    public String getEmailVerificationToken() {
-        return emailVerificationToken;
-    }
-
-    public void setEmailVerificationToken(String emailVerificationToken) {
-        this.emailVerificationToken = emailVerificationToken;
-    }
-
-    public LocalDateTime getEmailVerificationTokenExpiry() {
-        return emailVerificationTokenExpiry;
-    }
-
-    public void setEmailVerificationTokenExpiry(LocalDateTime emailVerificationTokenExpiry) {
-        this.emailVerificationTokenExpiry = emailVerificationTokenExpiry;
-    }
-
     // toString
     @Override
     public String toString() {
@@ -322,7 +285,6 @@ public class User {
                 ", citizenType=" + citizenType +
                 ", occupation=" + occupation +
                 ", registrationType=" + registrationType +
-                ", isEmailVerified=" + isEmailVerified +
                 ", createdAt=" + createdAt +
                 '}';
     }

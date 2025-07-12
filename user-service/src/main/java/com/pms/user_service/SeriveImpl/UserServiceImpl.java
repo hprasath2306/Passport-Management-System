@@ -1,9 +1,13 @@
 package com.pms.user_service.SeriveImpl;
 
+import com.pms.user_service.DTO.LoginRequestDto;
+import com.pms.user_service.DTO.LoginResponseDto;
 import com.pms.user_service.DTO.UserDto;
+import com.pms.user_service.DTO.UserResponseDto;
 import com.pms.user_service.Entity.User;
 import com.pms.user_service.Repository.UserRepository;
 import com.pms.user_service.Service.UserService;
+import com.pms.user_service.Util.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -16,14 +20,17 @@ import java.util.Random;
 @Service
 public class UserServiceImpl implements UserService {
 
-    UserRepository userRepository;
+    private UserRepository userRepository;
+
+    private JwtUtil jwtUtil;
 
     @Autowired
     private PasswordEncoder passwordEncoder;
 
     @Autowired
-    public UserServiceImpl(UserRepository userRepository) {
+    public UserServiceImpl(UserRepository userRepository, JwtUtil jwtUtil) {
         this.userRepository = userRepository;
+        this.jwtUtil = jwtUtil;
     }
 
     @Override
@@ -48,16 +55,21 @@ public class UserServiceImpl implements UserService {
         return userRepository.save(user);
     }
 
-//    @Override
-//    public User updateUser(String id, User user) {
-//        return null;
-//    }
-//
-//    @Override
-//    public void deleteUser(String id) {
-//
-//    }
-
+    @Override
+    public LoginResponseDto login(LoginRequestDto loginRequest) {
+        User user = userRepository.findByCustomerIdOrPhoneNumber(
+                loginRequest.getCustomerId(),
+                loginRequest.getPassword()
+        ).orElseThrow(() -> new RuntimeException("Invalid credentials"));
+        if (!passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())) {
+            System.out.println(loginRequest.getPassword());
+            System.out.println(user.getPassword());
+            throw new RuntimeException("Invalid credentials");
+        }
+        String token = jwtUtil.generateToken(user.getCustomerId(), user.getUserId());
+        UserResponseDto userResponse = new UserResponseDto(user);
+        return new LoginResponseDto(token, userResponse);
+    }
 
     //Helper methods
     private int calculateAge(LocalDate dateOfBirth) {
@@ -100,7 +112,6 @@ public class UserServiceImpl implements UserService {
         user.setPincode(request.pincode);
         user.setOccupation(request.occupation);
         user.setRegistrationType(request.registrationType);
-        user.setIsEmailVerified(false);
         return user;
     }
 
