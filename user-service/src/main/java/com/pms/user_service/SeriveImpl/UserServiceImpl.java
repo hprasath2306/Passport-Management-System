@@ -3,28 +3,30 @@ package com.pms.user_service.SeriveImpl;
 import com.pms.user_service.DTO.UserDto;
 import com.pms.user_service.Entity.User;
 import com.pms.user_service.Repository.UserRepository;
+import com.pms.user_service.Service.EmailService;
 import com.pms.user_service.Service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.Period;
 import java.util.List;
 import java.util.Random;
+import java.util.UUID;
 
 @Service
 public class UserServiceImpl implements UserService {
 
-    UserRepository userRepository;
+    @Autowired
+    private UserRepository userRepository;
 
     @Autowired
     private PasswordEncoder passwordEncoder;
 
     @Autowired
-    public UserServiceImpl(UserRepository userRepository) {
-        this.userRepository = userRepository;
-    }
+    private EmailService emailService;
 
     @Override
     public List<User> getAllUsers() {
@@ -39,27 +41,62 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User createUser(UserDto request) {
+        if (userRepository.existsByEmail(request.email)) {
+            throw new RuntimeException("User with this email already exists");
+        }
+        if (userRepository.existsByPhoneNumber(request.phoneNumber)) {
+            throw new RuntimeException("User with this phone number already exists");
+        }
+
         int age = calculateAge(request.dateOfBirth);
         User.CitizenType citizenType = determineCitizenType(age);
         String userId = generateUserId(request.registrationType);
         String customerId = generateCustomerId();
-
         User user = mapToUserEntity(request, userId, customerId, age, citizenType);
-        return userRepository.save(user);
+        String verificationToken = generateVerificationToken();
+        user.setEmailVerificationToken(verificationToken);
+        user.setEmailVerificationTokenExpiry(LocalDateTime.now().plusHours(24));
+        User savedUser = userRepository.save(user);
+        try {
+            emailService.sendVerificationEmail(user.getEmail(), verificationToken);
+        } catch (Exception e) {
+            System.err.println("Failed to send verification email: " + e.getMessage());
+        }
+        return savedUser;
     }
 
-//    @Override
-//    public User updateUser(String id, User user) {
-//        return null;
-//    }
-//
-//    @Override
-//    public void deleteUser(String id) {
-//
-//    }
+    @Override
+    public String verifyEmail(String token) {
+        User user = userRepository.findByValidVerificationToken(token, LocalDateTime.now())
+                .orElseThrow(() -> new RuntimeException("Invalid or expired verification token"));
 
+        user.setIsEmailVerified(true);
+        user.setEmailVerificationToken(null);
+        user.setEmailVerificationTokenExpiry(null);
+        userRepository.save(user);
+        return "Email verified successfully!";
+    }
 
-    //Helper methods
+    @Override
+    public String resendVerificationEmail(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found with email: " + email));
+
+        if (user.getIsEmailVerified()) {
+            throw new RuntimeException("Email is already verified");
+        }
+
+        String verificationToken = generateVerificationToken();
+        user.setEmailVerificationToken(verificationToken);
+        user.setEmailVerificationTokenExpiry(LocalDateTime.now().plusHours(24));
+        userRepository.save(user);
+
+        emailService.sendVerificationEmail(user.getEmail(), verificationToken);
+
+        return "Verification email sent successfully!";
+    }
+
+    // Helper methods
     private int calculateAge(LocalDate dateOfBirth) {
         return Period.between(dateOfBirth, LocalDate.now()).getYears();
     }
@@ -80,6 +117,10 @@ public class UserServiceImpl implements UserService {
     private String generateCustomerId() {
         int randomNumber = 100000 + new Random().nextInt(900000);
         return String.valueOf(randomNumber);
+    }
+
+    private String generateVerificationToken() {
+        return UUID.randomUUID().toString().replace("-", "");
     }
 
     private User mapToUserEntity(UserDto request, String userId, String customerId, int age, User.CitizenType citizenType) {
@@ -103,5 +144,4 @@ public class UserServiceImpl implements UserService {
         user.setIsEmailVerified(false);
         return user;
     }
-
 }

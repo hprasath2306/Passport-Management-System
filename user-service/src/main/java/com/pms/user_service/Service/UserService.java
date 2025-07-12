@@ -9,6 +9,6 @@ public interface UserService {
     List<User> getAllUsers();
     User getUserById(String id);
     User createUser(UserDto request);
-//    User updateUser(String id, User user);
-//    void deleteUser(String id);
+    String verifyEmail(String token);
+    String resendVerificationEmail(String email);
 }
