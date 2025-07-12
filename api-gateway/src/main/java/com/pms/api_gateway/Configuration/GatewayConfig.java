@@ -20,13 +20,7 @@ public class GatewayConfig {
                 .route("user-service-auth", r -> r
                         .path("/api/auth/**")
                         .uri("lb://user-service"))
-
-                // Route for protected user service endpoints (JWT required)
-                .route("user-service-protected", r -> r
-                        .path("/api/users/**", "/api/user/**")
-                        .filters(f -> f.filter(jwtAuthenticationFilter.apply(new JwtAuthenticationFilter.Config())))
-                        .uri("lb://user-service"))
-
+                
                 // Catch-all route for any other user service endpoints (JWT required)
                 .route("user-service-all", r -> r
                         .path("/api/**")
