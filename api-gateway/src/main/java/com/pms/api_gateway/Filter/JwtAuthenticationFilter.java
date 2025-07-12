@@ -27,30 +27,26 @@ public class JwtAuthenticationFilter extends AbstractGatewayFilterFactory<JwtAut
         return (exchange, chain) -> {
             ServerHttpRequest request = exchange.getRequest();
 
-            // Check if the request path contains /auth - if so, skip JWT validation
             String path = request.getPath().toString();
             if (path.contains("/auth")) {
                 return chain.filter(exchange);
             }
 
-            // For non-auth routes, validate JWT token
             String authHeader = request.getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
 
             if (authHeader == null || !authHeader.startsWith("Bearer ")) {
                 return handleUnauthorized(exchange);
             }
 
-            String token = authHeader.substring(7); // Remove "Bearer " prefix
+            String token = authHeader.substring(7);
 
             if (!jwtUtil.validateToken(token)) {
                 return handleUnauthorized(exchange);
             }
 
-            // Extract user information from token and add to headers
             String customerId = jwtUtil.getCustomerIdFromToken(token);
             String userId = jwtUtil.getUserIdFromToken(token);
 
-            // Add user info to request headers for downstream services
             ServerHttpRequest modifiedRequest = request.mutate()
                     .header("X-Customer-Id", customerId)
                     .header("X-User-Id", userId)
@@ -70,6 +66,6 @@ public class JwtAuthenticationFilter extends AbstractGatewayFilterFactory<JwtAut
     }
 
     public static class Config {
-        // Configuration properties if needed
+        // Configuration properties
     }
 }
