@@ -58,8 +58,8 @@ public class UserServiceImpl implements UserService {
     @Override
     public LoginResponseDto login(LoginRequestDto loginRequest) {
         User user = userRepository.findByCustomerIdOrPhoneNumber(
-                loginRequest.getCustomerId(),
-                loginRequest.getPassword()
+                loginRequest.getCustomerIdOrPhone(),
+                loginRequest.getCustomerIdOrPhone()
         ).orElseThrow(() -> new RuntimeException("Invalid credentials"));
         if (!passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())) {
             throw new RuntimeException("Invalid credentials");
