@@ -6,6 +6,7 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
@@ -35,6 +36,7 @@ public class PassportApplicationController {
     }
 
     @GetMapping("/all")
+    @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<List<PassportApplication>> getAllApplications() {
         List<PassportApplication> applications = passportService.getAllApplications();
         return new ResponseEntity<>(applications, HttpStatus.OK);
@@ -47,6 +49,7 @@ public class PassportApplicationController {
     }
 
     @PutMapping("/status/{applicationId}")
+    @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<?> updateStatus(@PathVariable Integer applicationId,
                                           @RequestParam PassportApplication.ApplicationStatus status) {
         PassportApplication updatedApplication = passportService.updateApplicationStatus(applicationId, status);

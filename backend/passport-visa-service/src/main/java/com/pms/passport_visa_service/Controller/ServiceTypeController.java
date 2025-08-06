@@ -6,6 +6,7 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -19,12 +20,14 @@ public class ServiceTypeController {
     private ServiceTypeService serviceTypeService;
 
     @GetMapping
+    @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<List<ServiceType>> getAllServiceTypes() {
         List<ServiceType> serviceTypes = serviceTypeService.getAllServiceTypes();
         return ResponseEntity.ok(serviceTypes);
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<ServiceType> getServiceTypeById(@PathVariable Integer id) {
         Optional<ServiceType> serviceType = serviceTypeService.getServiceTypeById(id);
         return serviceType.map(ResponseEntity::ok)
@@ -32,12 +35,14 @@ public class ServiceTypeController {
     }
 
     @PostMapping
+    @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<ServiceType> createServiceType(@Valid @RequestBody ServiceType serviceType) {
         ServiceType createdServiceType = serviceTypeService.createServiceType(serviceType);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdServiceType);
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<ServiceType> updateServiceType(@PathVariable Integer id,
                                                          @RequestBody ServiceType serviceType) {
         try {
@@ -49,6 +54,7 @@ public class ServiceTypeController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<Void> deleteServiceType(@PathVariable Integer id) {
         try {
             serviceTypeService.deleteServiceType(id);

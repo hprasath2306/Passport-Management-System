@@ -4,6 +4,7 @@ import com.pms.passport_visa_service.Entity.VisaCancellation;
 import com.pms.passport_visa_service.Service.VisaCancellationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -22,6 +23,7 @@ public class VisaCancellationController {
     }
 
     @PutMapping("/{id}/status")
+    @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<VisaCancellation> updateStatus(
             @PathVariable Long id,
             @RequestParam VisaCancellation.CancellationStatus status) {
@@ -30,6 +32,7 @@ public class VisaCancellationController {
     }
 
     @GetMapping("/all")
+    @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<List<VisaCancellation>> getAllCancellations() {
         return ResponseEntity.ok(cancellationService.getAllCancellations());
     }

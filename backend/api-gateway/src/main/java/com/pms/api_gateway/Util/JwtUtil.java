@@ -66,6 +66,21 @@ public class JwtUtil {
         }
     }
 
+    public String getRoleFromToken(String token) {
+        try {
+            Claims claims = Jwts.parserBuilder()
+                    .setSigningKey(getSigningKey())
+                    .build()
+                    .parseClaimsJws(token)
+                    .getBody();
+            return claims.get("role", String.class);
+        } catch (JwtException | IllegalArgumentException e) {
+            System.err.println("Failed to extract role from token: " + e.getMessage());
+            return null;
+        }
+    }
+
+
     public boolean isTokenExpired(String token) {
         try {
             Claims claims = Jwts.parserBuilder()

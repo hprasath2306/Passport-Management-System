@@ -5,6 +5,7 @@ import com.pms.passport_visa_service.Service.VisaApplicationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -41,6 +42,7 @@ public class VisaApplicationController {
     }
 
     @PutMapping("/{visaId}/status")
+    @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<VisaApplication> updateVisaStatus(@PathVariable String visaId, @RequestParam VisaApplication.ApplicationStatus status) {
         VisaApplication updatedVisa = visaApplicationService.updateVisaStatus(visaId, status);
         return new ResponseEntity<>(updatedVisa, HttpStatus.OK);
@@ -48,6 +50,7 @@ public class VisaApplicationController {
     }
 
     @GetMapping("/all")
+    @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<List<VisaApplication>> getAllVisaApplications() {
         List<VisaApplication> visas = visaApplicationService.getAllVisaApplications();
         return new ResponseEntity<>(visas, HttpStatus.OK);

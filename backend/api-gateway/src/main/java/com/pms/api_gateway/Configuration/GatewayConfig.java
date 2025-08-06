@@ -26,7 +26,7 @@ public class GatewayConfig {
                         .uri("lb://user-service"))
 
                 .route("passport-visa-service", r -> r
-                        .path("/api/passport/**", "/api/visa/**", "/api/visa-cancellation/**")
+                        .path("/api/passport/**", "/api/visa/**", "/api/visa-cancellation/**", "/api/service-types/**", "/api/booklet-types/**")
                         .filters(f -> f.filter(jwtAuthenticationFilter.apply(new JwtAuthenticationFilter.Config())))
                         .uri("lb://passport-visa-service"))
                 .build();

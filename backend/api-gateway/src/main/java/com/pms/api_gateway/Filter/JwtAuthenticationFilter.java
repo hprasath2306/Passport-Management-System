@@ -46,10 +46,12 @@ public class JwtAuthenticationFilter extends AbstractGatewayFilterFactory<JwtAut
 
             String customerId = jwtUtil.getCustomerIdFromToken(token);
             String userId = jwtUtil.getUserIdFromToken(token);
+            String role = jwtUtil.getRoleFromToken(token);
 
             ServerHttpRequest modifiedRequest = request.mutate()
                     .header("X-Customer-Id", customerId)
                     .header("X-User-Id", userId)
+                    .header("X-Role", role)
                     .build();
 
             return chain.filter(exchange

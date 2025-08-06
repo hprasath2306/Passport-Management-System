@@ -78,6 +78,10 @@ public class User {
     @NotNull(message = "Registration type is required")
     private RegistrationType registrationType;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "role", nullable = false)
+    private Role role = Role.USER;
+
     @CreationTimestamp
     @Column(name = "created_at", nullable = true, updatable = false)
     private LocalDateTime createdAt;
@@ -97,6 +101,10 @@ public class User {
 
     public enum RegistrationType {
         PASSPORT, VISA
+    }
+
+    public enum Role {
+        USER, ADMIN
     }
 
     // Constructors
@@ -172,6 +180,14 @@ public class User {
 
     public void setAge(Integer age) {
         this.age = age;
+    }
+
+    public void setRole(Role role) {
+        this.role = role;
+    }
+
+    public Role getRole() {
+        return role;
     }
 
     public CitizenType getCitizenType() {
