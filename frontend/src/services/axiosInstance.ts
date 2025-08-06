@@ -6,7 +6,7 @@ const axiosInstance = axios.create({
 
 axiosInstance.interceptors.request.use(
   (config) => {
-    const userData = localStorage.getItem("userData");
+    const userData = localStorage.getItem("user");
     if (userData) {
       const token = JSON.parse(userData).token;
       if (token) {
