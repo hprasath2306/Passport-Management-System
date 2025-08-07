@@ -30,9 +30,8 @@ public class PassportApplicationController {
     }
 
     @GetMapping("/user/{userId}")
-    public ResponseEntity<?> getPassportByUserId(@PathVariable String userId) {
-        PassportApplication passport = passportService.getPassportByUserId(userId);
-        return new ResponseEntity<>(passport, HttpStatus.OK);
+    public ResponseEntity<Boolean> getPassportByUserId(@PathVariable String userId) {
+        return passportService.getPassportByUserId(userId);
     }
 
     @GetMapping("/all")

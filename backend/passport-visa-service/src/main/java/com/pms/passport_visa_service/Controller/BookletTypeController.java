@@ -19,14 +19,12 @@ public class BookletTypeController {
     private BookletTypeService bookletTypeService;
 
     @GetMapping
-    @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<List<BookletType>> getAllBookletTypes() {
         List<BookletType> bookletTypes = bookletTypeService.getAllBookletTypes();
         return ResponseEntity.ok(bookletTypes);
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<BookletType> getBookletTypeById(@PathVariable Integer id) {
         Optional<BookletType> bookletType = bookletTypeService.getBookletTypeById(id);
         return bookletType.map(ResponseEntity::ok)

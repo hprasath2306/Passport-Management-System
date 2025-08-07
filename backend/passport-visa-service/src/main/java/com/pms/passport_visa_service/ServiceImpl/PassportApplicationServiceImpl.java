@@ -10,10 +10,13 @@ import com.pms.passport_visa_service.Repository.ServiceTypeRepository;
 import com.pms.passport_visa_service.Service.PassportApplicationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 import java.util.Random;
 
 @Service
@@ -131,10 +134,15 @@ public class PassportApplicationServiceImpl implements PassportApplicationServic
     }
 
     @Override
-    public PassportApplication getPassportByUserId(String userId) {
-        return repository.findByUserId(userId)
-                .orElseThrow(() -> new RuntimeException("Passport not found for user: " + userId));
+    public ResponseEntity<Boolean> getPassportByUserId(String userId) {
+        Optional<PassportApplication> passport = repository.findByUserId(userId);
+        if (passport.isPresent()) {
+            return new ResponseEntity<>(true, HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>(false, HttpStatus.NO_CONTENT);
+        }
     }
+
 
     @Override
     public List<PassportApplication> getAllApplications() {
@@ -158,7 +166,7 @@ public class PassportApplicationServiceImpl implements PassportApplicationServic
 
     private UserResponseDto fetchUserDetails(String userId) {
         try {
-            String url = userServiceUrl + "/api/user/" + userId;
+            String url = userServiceUrl + "/api/users/" + userId;
             return restTemplate.getForObject(url, UserResponseDto.class);
         } catch (Exception e) {
             throw new RuntimeException("Unable to fetch user details: " + e.getMessage());

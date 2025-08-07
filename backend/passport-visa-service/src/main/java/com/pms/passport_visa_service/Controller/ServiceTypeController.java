@@ -20,14 +20,12 @@ public class ServiceTypeController {
     private ServiceTypeService serviceTypeService;
 
     @GetMapping
-    @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<List<ServiceType>> getAllServiceTypes() {
         List<ServiceType> serviceTypes = serviceTypeService.getAllServiceTypes();
         return ResponseEntity.ok(serviceTypes);
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<ServiceType> getServiceTypeById(@PathVariable Integer id) {
         Optional<ServiceType> serviceType = serviceTypeService.getServiceTypeById(id);
         return serviceType.map(ResponseEntity::ok)

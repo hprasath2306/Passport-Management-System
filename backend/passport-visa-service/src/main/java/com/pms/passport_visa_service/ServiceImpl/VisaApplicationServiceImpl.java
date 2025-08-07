@@ -112,7 +112,7 @@ public class VisaApplicationServiceImpl implements VisaApplicationService {
 
     private UserResponseDto fetchUserDetails(String userId) {
         try {
-            String url = userServiceUrl + "/api/user/" + userId;
+            String url = userServiceUrl + "/api/users/" + userId;
             return restTemplate.getForObject(url, UserResponseDto.class);
         } catch (Exception e) {
             throw new RuntimeException("Unable to fetch user details " + e.getMessage());

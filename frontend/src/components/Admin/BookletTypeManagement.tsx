@@ -1,57 +1,91 @@
-import React, { useState } from 'react';
-import { mockBookletTypes } from '../../services/mockData';
-import type { BookletType } from '../../types';
-import { Plus, Edit2, Trash2, Save, X } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import axiosInstance from '../../services/axiosInstance';
 
 const BookletTypeManagement: React.FC = () => {
-  const [booklets, setBooklets] = useState<BookletType[]>(mockBookletTypes);
+  const [booklets, setBooklets] = useState<any[]>([]);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [showAddForm, setShowAddForm] = useState(false);
-  const [formData, setFormData] = useState<Partial<BookletType>>({
-    name: '',
-    pages: 36,
-    validity: '',
-    price: 0,
-    status: 'ACTIVE'
+  const [formData, setFormData] = useState({
+    pages: 30,
+    idFormat: '',
   });
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  const handleEdit = (booklet: BookletType) => {
+  useEffect(() => {
+    const fetchBookletTypes = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const response = await axiosInstance.get('/api/booklet-types');
+        setBooklets(response.data || []);
+      } catch (err) {
+        setError('Failed to load booklet types.');
+      }
+      setLoading(false);
+    };
+    fetchBookletTypes();
+  }, []);
+
+  const handleEdit = (booklet: any) => {
     setEditingId(booklet.id);
-    setFormData(booklet);
+    setFormData({
+      pages: booklet.pages,
+      idFormat: booklet.idFormat,
+    });
+    setShowAddForm(true);
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (editingId) {
-      setBooklets(booklets.map(b => b.id === editingId ? { ...b, ...formData } as BookletType : b));
-      setEditingId(null);
+      try {
+        await axiosInstance.put(`/api/booklet-types/${editingId}`, formData);
+        setBooklets(booklets.map(b => b.id === editingId ? { ...b, ...formData } : b));
+        setEditingId(null);
+      } catch (err) {
+        setError('Failed to update booklet type.');
+      }
     } else {
-      const { id, ...restFormData } = formData as BookletType;
-      const newBooklet: BookletType = {
-        id: `BT${Date.now()}`,
-        ...restFormData
-      };
-      setBooklets([...booklets, newBooklet]);
-      setShowAddForm(false);
+      try {
+        const response = await axiosInstance.post('/api/booklet-types', formData);
+        setBooklets([...booklets, response.data]);
+        setShowAddForm(false);
+      } catch (err) {
+        setError('Failed to add booklet type.');
+      }
     }
-    setFormData({ name: '', pages: 36, validity: '', price: 0, status: 'ACTIVE' });
+    setFormData({ pages: 30, idFormat: '' });
   };
 
   const handleCancel = () => {
     setEditingId(null);
     setShowAddForm(false);
-    setFormData({ name: '', pages: 36, validity: '', price: 0, status: 'ACTIVE' });
+    setFormData({ pages: 30, idFormat: '' });
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
     if (window.confirm('Are you sure you want to delete this booklet type?')) {
-      setBooklets(booklets.filter(b => b.id !== id));
+      try {
+        await axiosInstance.delete(`/api/booklet-types/${id}`);
+        setBooklets(booklets.filter(b => b.id !== id));
+      } catch (err) {
+        setError('Failed to delete booklet type.');
+      }
     }
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.type === 'number' ? parseFloat(e.target.value) : e.target.value;
     setFormData({ ...formData, [e.target.name]: value });
   };
+
+  if (loading) {
+    return <div className="loading-container">Loading booklet types...</div>;
+  }
+
+  if (error) {
+    return <div className="error-container">{error}</div>;
+  }
 
   return (
     <div className="management-container">
@@ -61,7 +95,6 @@ const BookletTypeManagement: React.FC = () => {
           className="btn btn-primary"
           onClick={() => setShowAddForm(true)}
         >
-          <Plus size={20} />
           Add Booklet Type
         </button>
       </div>
@@ -72,82 +105,33 @@ const BookletTypeManagement: React.FC = () => {
             <h3>{editingId ? 'Edit Booklet Type' : 'Add Booklet Type'}</h3>
             <form onSubmit={(e) => { e.preventDefault(); handleSave(); }}>
               <div className="form-group">
-                <label className="form-label">Name</label>
+                <label className="form-label">Pages</label>
                 <input
-                  type="text"
-                  name="name"
-                  value={formData.name || ''}
+                  type="number"
+                  name="pages"
+                  value={formData.pages}
                   onChange={handleChange}
                   className="form-input"
+                  min="24"
+                  max="200"
                   required
                 />
               </div>
-              
-              <div className="form-row">
-                <div className="form-group">
-                  <label className="form-label">Pages</label>
-                  <input
-                    type="number"
-                    name="pages"
-                    value={formData.pages || ''}
-                    onChange={handleChange}
-                    className="form-input"
-                    min="24"
-                    max="200"
-                    required
-                  />
-                </div>
-                
-                <div className="form-group">
-                  <label className="form-label">Validity</label>
-                  <input
-                    type="text"
-                    name="validity"
-                    value={formData.validity || ''}
-                    onChange={handleChange}
-                    className="form-input"
-                    placeholder="e.g., 10 years"
-                    required
-                  />
-                </div>
+              <div className="form-group">
+                <label className="form-label">ID Format</label>
+                <input
+                  type="text"
+                  name="idFormat"
+                  value={formData.idFormat}
+                  onChange={handleChange}
+                  className="form-input"
+                  placeholder="e.g., FPS-30XXXX"
+                  required
+                />
               </div>
-              
-              <div className="form-row">
-                <div className="form-group">
-                  <label className="form-label">Price (₹)</label>
-                  <input
-                    type="number"
-                    name="price"
-                    value={formData.price || ''}
-                    onChange={handleChange}
-                    className="form-input"
-                    required
-                  />
-                </div>
-                
-                <div className="form-group">
-                  <label className="form-label">Status</label>
-                  <select
-                    name="status"
-                    value={formData.status || 'ACTIVE'}
-                    onChange={handleChange}
-                    className="form-input"
-                  >
-                    <option value="ACTIVE">Active</option>
-                    <option value="INACTIVE">Inactive</option>
-                  </select>
-                </div>
-              </div>
-              
               <div className="form-actions">
-                <button type="submit" className="btn btn-primary">
-                  <Save size={20} />
-                  Save
-                </button>
-                <button type="button" className="btn btn-outline" onClick={handleCancel}>
-                  <X size={20} />
-                  Cancel
-                </button>
+                <button type="submit" className="btn btn-primary">Save</button>
+                <button type="button" className="btn btn-outline" onClick={handleCancel}>Cancel</button>
               </div>
             </form>
           </div>
@@ -158,40 +142,20 @@ const BookletTypeManagement: React.FC = () => {
         <table>
           <thead>
             <tr>
-              <th>Name</th>
               <th>Pages</th>
-              <th>Validity</th>
-              <th>Price</th>
-              <th>Status</th>
+              <th>ID Format</th>
               <th>Actions</th>
             </tr>
           </thead>
           <tbody>
-            {booklets.map(booklet => (
-              <tr key={booklet.id}>
-                <td>{booklet.name}</td>
+            {booklets.map((booklet, idx) => (
+              <tr key={booklet.id || idx}>
                 <td>{booklet.pages}</td>
-                <td>{booklet.validity}</td>
-                <td>₹{booklet.price}</td>
-                <td>
-                  <span className={`status-badge ${booklet.status === 'ACTIVE' ? 'status-approved' : 'status-rejected'}`}>
-                    {booklet.status}
-                  </span>
-                </td>
+                <td>{booklet.idFormat}</td>
                 <td>
                   <div className="action-buttons">
-                    <button
-                      className="btn-icon btn-edit"
-                      onClick={() => handleEdit(booklet)}
-                    >
-                      <Edit2 size={16} />
-                    </button>
-                    <button
-                      className="btn-icon btn-delete"
-                      onClick={() => handleDelete(booklet.id)}
-                    >
-                      <Trash2 size={16} />
-                    </button>
+                    <button className="btn-icon btn-edit" onClick={() => handleEdit(booklet)}>Edit</button>
+                    <button className="btn-icon btn-delete" onClick={() => handleDelete(booklet.id)}>Delete</button>
                   </div>
                 </td>
               </tr>

@@ -1,51 +1,5 @@
 import type { ServiceType, BookletType, PassportApplication, VisaApplication } from '../types';
 
-export const mockServiceTypes: ServiceType[] = [
-  {
-    id: 'ST001',
-    name: 'Normal Service',
-    description: 'Standard passport processing service',
-    price: 1500,
-    processingTime: '30 days',
-    status: 'ACTIVE'
-  },
-  {
-    id: 'ST002',
-    name: 'Tatkal Service',
-    description: 'Fast track passport processing',
-    price: 3500,
-    processingTime: '7 days',
-    status: 'ACTIVE'
-  },
-  {
-    id: 'ST003',
-    name: 'Emergency Service',
-    description: 'Emergency passport processing',
-    price: 5000,
-    processingTime: '3 days',
-    status: 'ACTIVE'
-  }
-];
-
-export const mockBookletTypes: BookletType[] = [
-  {
-    id: 'BT001',
-    name: '36 Pages',
-    pages: 36,
-    validity: '10 years',
-    price: 2000,
-    status: 'ACTIVE'
-  },
-  {
-    id: 'BT002',
-    name: '60 Pages',
-    pages: 60,
-    validity: '10 years',
-    price: 2500,
-    status: 'ACTIVE'
-  }
-];
-
 export const mockPassportApplications: PassportApplication[] = [
   {
     id: 'PA001',
