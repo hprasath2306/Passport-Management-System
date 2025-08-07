@@ -18,6 +18,7 @@ public class UserResponseDto {
     public String pincode;
     public String city;
     public String state;
+    public User.Role role;
     public User.CitizenType citizenType;
     public User.Occupation occupation;
     public User.RegistrationType registrationType;
@@ -36,6 +37,7 @@ public class UserResponseDto {
         this.city = user.getCity();
         this.state = user.getState();
         this.pincode = user.getPincode();
+        this.role = user.getRole();
         this.citizenType = user.getCitizenType();
         this.occupation = user.getOccupation();
         this.registrationType = user.getRegistrationType();
@@ -45,7 +47,7 @@ public class UserResponseDto {
     public UserResponseDto() {
     }
 
-    public UserResponseDto(String userId, String customerId, String firstName, String lastName, String email, String phoneNumber, LocalDate dateOfBirth, int age, String address, String pincode, String city, String state, User.CitizenType citizenType, User.Occupation occupation, User.RegistrationType registrationType, LocalDateTime createdAt) {
+    public UserResponseDto(String userId, String customerId, String firstName, String lastName, String email, String phoneNumber, LocalDate dateOfBirth, int age, String address, String pincode, String city, String state, User.Role role, User.CitizenType citizenType, User.Occupation occupation, User.RegistrationType registrationType, LocalDateTime createdAt) {
         this.userId = userId;
         this.customerId = customerId;
         this.firstName = firstName;
@@ -58,10 +60,19 @@ public class UserResponseDto {
         this.pincode = pincode;
         this.city = city;
         this.state = state;
+        this.role = role;
         this.citizenType = citizenType;
         this.occupation = occupation;
         this.registrationType = registrationType;
         this.createdAt = createdAt;
+    }
+
+    public User.Role getRole() {
+        return role;
+    }
+
+    public void setRole(User.Role role) {
+        this.role = role;
     }
 
     public String getUserId() {

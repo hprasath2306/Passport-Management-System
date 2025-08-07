@@ -19,7 +19,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, adminOnly = f
   }
 
   if (!user) {
-    return null; // This will show the login page
+    return null;
   }
 
   if (adminOnly && user.role !== 'ADMIN') {
