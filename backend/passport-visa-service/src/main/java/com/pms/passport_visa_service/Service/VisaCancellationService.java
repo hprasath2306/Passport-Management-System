@@ -8,12 +8,10 @@ public interface VisaCancellationService {
 
     VisaCancellation requestCancellation(VisaCancellation visaCancellation);
 
-    VisaCancellation updateCancellationStatus(Long cancellationId, VisaCancellation.CancellationStatus status);
-
     List<VisaCancellation> getAllCancellations();
 
     List<VisaCancellation> getCancellationsByUserId(String userId);
 
-    List<VisaCancellation> getCancellationsByApplicationId(Integer visaApplicationId);
+    List<VisaCancellation> getCancellationsByApplicationId(String visaApplicationId);
 }
 

@@ -22,15 +22,6 @@ public class VisaCancellationController {
         return ResponseEntity.ok(cancelled);
     }
 
-    @PutMapping("/{id}/status")
-    @PreAuthorize("hasAuthority('ADMIN')")
-    public ResponseEntity<VisaCancellation> updateStatus(
-            @PathVariable Long id,
-            @RequestParam VisaCancellation.CancellationStatus status) {
-        VisaCancellation updated = cancellationService.updateCancellationStatus(id, status);
-        return ResponseEntity.ok(updated);
-    }
-
     @GetMapping("/all")
     @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<List<VisaCancellation>> getAllCancellations() {
@@ -43,7 +34,7 @@ public class VisaCancellationController {
     }
 
     @GetMapping("/application/{visaApplicationId}")
-    public ResponseEntity<List<VisaCancellation>> getByApplication(@PathVariable Integer visaApplicationId) {
+    public ResponseEntity<List<VisaCancellation>> getByApplication(@PathVariable String visaApplicationId) {
         return ResponseEntity.ok(cancellationService.getCancellationsByApplicationId(visaApplicationId));
     }
 }

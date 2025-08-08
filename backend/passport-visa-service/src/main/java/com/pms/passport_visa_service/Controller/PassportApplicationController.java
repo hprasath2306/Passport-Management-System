@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/passport")
@@ -30,7 +31,7 @@ public class PassportApplicationController {
     }
 
     @GetMapping("/user/{userId}")
-    public ResponseEntity<Boolean> getPassportByUserId(@PathVariable String userId) {
+    public ResponseEntity<Optional<PassportApplication>> getPassportByUserId(@PathVariable String userId) {
         return passportService.getPassportByUserId(userId);
     }
 

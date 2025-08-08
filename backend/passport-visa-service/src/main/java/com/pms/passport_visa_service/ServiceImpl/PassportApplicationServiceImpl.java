@@ -134,12 +134,12 @@ public class PassportApplicationServiceImpl implements PassportApplicationServic
     }
 
     @Override
-    public ResponseEntity<Boolean> getPassportByUserId(String userId) {
+    public ResponseEntity<Optional<PassportApplication>> getPassportByUserId(String userId) {
         Optional<PassportApplication> passport = repository.findByUserId(userId);
         if (passport.isPresent()) {
-            return new ResponseEntity<>(true, HttpStatus.OK);
+            return new ResponseEntity<>(passport, HttpStatus.OK);
         } else {
-            return new ResponseEntity<>(false, HttpStatus.NO_CONTENT);
+            return new ResponseEntity<>(Optional.empty(), HttpStatus.NOT_FOUND);
         }
     }
 

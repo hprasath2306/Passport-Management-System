@@ -1,18 +1,21 @@
 import React, { useEffect, useState } from "react";
 import { useAuth } from "../../context/AuthContext";
-import {
-  Import as Passport,
-  Globe,
-  FileText,
-  Clock,
-  CheckCircle,
-  XCircle,
-  AlertCircle,
-} from "lucide-react";
+import { Import as Passport, Globe, FileText, Plus } from "lucide-react";
 import PassportApplication from "./PassportApplication";
 import VisaApplication from "./VisaApplication";
-import { passportService } from "../../services/passportService";
+import VisaCancellation from "./VisaCancellation";
+import {
+  passportService,
+  type PassportDetails,
+} from "../../services/passportService";
 import { visaService } from "../../services/visaService";
+import {
+  getStatusColor,
+  getStatusIcon,
+  getEffectivePassportStatus,
+  isPassportExpired,
+} from "../../utils/index";
+import { ViewPassport } from "./ViewPassport";
 
 const UserDashboard: React.FC = () => {
   const { user } = useAuth();
@@ -20,11 +23,19 @@ const UserDashboard: React.FC = () => {
     "overview"
   );
 
-  const [hasPassport, setHasPassport] = useState(false);
+  const [passportDetails, setPassportDetails] =
+    useState<PassportDetails | null>(null);
   const [hasVisa, setHasVisa] = useState(false);
   const [visaApplications, setVisaApplications] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [renewalLoading, setRenewalLoading] = useState(false);
+  const [renewalError, setRenewalError] = useState<string | null>(null);
+  const [showVisaApplication, setShowVisaApplication] = useState(false);
+  const [showCancellation, setShowCancellation] = useState<{
+    show: boolean;
+    visaId?: number;
+  }>({ show: false });
 
   useEffect(() => {
     const fetchData = async () => {
@@ -32,9 +43,11 @@ const UserDashboard: React.FC = () => {
       setLoading(true);
       setError(null);
       try {
-        // Fetch passport status
-        const hasPassportResponse = await passportService.getPassportByUserId(user.userId);
-        setHasPassport(!!hasPassportResponse);
+        // Fetch passport details
+        const passportData = await passportService.getPassportByUserId(
+          user.userId
+        );
+        setPassportDetails(passportData);
 
         // Fetch visa applications
         const visas = await visaService.getVisasByUserId(user.userId);
@@ -42,7 +55,7 @@ const UserDashboard: React.FC = () => {
         setHasVisa((visas || []).length > 0);
       } catch (err) {
         setError("Failed to fetch data from backend.");
-        setHasPassport(false);
+        setPassportDetails(null);
         setVisaApplications([]);
         setHasVisa(false);
       }
@@ -51,38 +64,67 @@ const UserDashboard: React.FC = () => {
     fetchData();
   }, [user?.userId]);
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "APPROVED":
-        return "status-approved";
-      case "PENDING":
-        return "status-pending";
-      case "PROCESSING":
-        return "status-processing";
-      case "REJECTED":
-        return "status-rejected";
-      case "CANCELLED":
-        return "status-cancelled";
-      default:
-        return "status-pending";
+  const handleRenewal = async () => {
+    if (!user?.userId || !passportDetails) return;
+
+    setRenewalLoading(true);
+    setRenewalError(null);
+
+    try {
+      await passportService.renewPassport(user.userId);
+      // Refresh passport details after renewal
+      const updatedPassportData = await passportService.getPassportByUserId(
+        user.userId
+      );
+      setPassportDetails(updatedPassportData);
+    } catch (err: any) {
+      setRenewalError(
+        err.response?.data?.message ||
+          "Failed to renew passport. Please try again."
+      );
     }
+
+    setRenewalLoading(false);
   };
 
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case "APPROVED":
-        return <CheckCircle size={16} />;
-      case "PENDING":
-        return <Clock size={16} />;
-      case "PROCESSING":
-        return <AlertCircle size={16} />;
-      case "REJECTED":
-        return <XCircle size={16} />;
-      case "CANCELLED":
-        return <XCircle size={16} />;
-      default:
-        return <Clock size={16} />;
+  const handleVisaApplicationSuccess = async () => {
+    // Refresh visa applications after successful submission
+    if (user?.userId) {
+      const visas = await visaService.getVisasByUserId(user.userId);
+      setVisaApplications(visas || []);
+      setHasVisa((visas || []).length > 0);
     }
+    setShowVisaApplication(false);
+  };
+
+  const handleCancellationSuccess = async () => {
+    // Refresh visa applications after successful cancellation
+    if (user?.userId) {
+      const visas = await visaService.getVisasByUserId(user.userId);
+      setVisaApplications(visas || []);
+      setHasVisa((visas || []).length > 0);
+    }
+    setShowCancellation({ show: false });
+  };
+
+  const effectiveStatus = passportDetails
+    ? getEffectivePassportStatus(
+        passportDetails.status,
+        passportDetails.expiryDate || null
+      )
+    : null;
+
+  const isExpired =
+    passportDetails && isPassportExpired(passportDetails.expiryDate || null);
+  const canApplyForVisa =
+    passportDetails && effectiveStatus === "ISSUED" && !isExpired;
+
+  const canCancelVisa = (visa: any) => {
+    return (
+      visa.status === "PENDING" ||
+      visa.status === "APPROVED" ||
+      visa.status === "ISSUED"
+    );
   };
 
   return (
@@ -115,109 +157,197 @@ const UserDashboard: React.FC = () => {
               <Passport size={20} />
               Passport
             </button>
-            {hasPassport && (
+            {canApplyForVisa && (
               <button
                 className={`tab ${activeTab === "visa" ? "active" : ""}`}
                 onClick={() => setActiveTab("visa")}
               >
                 <Globe size={20} />
-                Visa
+                Visa Applications
               </button>
             )}
           </div>
 
           <div className="dashboard-content">
             {activeTab === "overview" && (
-              <div className="overview-grid">
-                <div className="overview-card">
-                  <div className="card-icon passport-icon">
-                    <Passport size={24} />
-                  </div>
-                  <div className="card-content">
-                    <h3>Passport Status</h3>
-                    <p
-                      className={hasPassport ? "status-approved" : "status-pending"}
-                    >
-                      {hasPassport ? "Active" : "Not Applied"}
-                    </p>
-                  </div>
-                </div>
-                {hasPassport && (
+              <div className="overview-section">
+                <div className="overview-grid">
                   <div className="overview-card">
-                    <div className="card-icon visa-icon">
-                      <Globe size={24} />
+                    <div className="card-icon passport-icon">
+                      <Passport size={24} />
                     </div>
                     <div className="card-content">
-                      <h3>Visa Applications</h3>
-                      <p>{hasVisa ? "Active" : "Not Applied"}</p>
+                      <h3>Passport Status</h3>
+                      <p
+                        className={
+                          effectiveStatus
+                            ? getStatusColor(effectiveStatus)
+                            : "status-pending"
+                        }
+                      >
+                        {effectiveStatus || "Not Applied"}
+                      </p>
+                      {isExpired && (
+                        <small className="expiry-warning">
+                          Expired on{" "}
+                          {new Date(
+                            passportDetails!.expiryDate!
+                          ).toLocaleDateString()}
+                        </small>
+                      )}
                     </div>
                   </div>
-                )}
+                  {canApplyForVisa && (
+                    <div className="overview-card">
+                      <div className="card-icon visa-icon">
+                        <Globe size={24} />
+                      </div>
+                      <div className="card-content">
+                        <h3>Visa Applications</h3>
+                        <p>
+                          {hasVisa
+                            ? `${visaApplications.length} Applications`
+                            : "No Applications"}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
             )}
 
             {activeTab === "passport" && (
               <div className="passport-section">
-                {/* You may want to fetch and show passport application details here if needed */}
-                {!hasPassport ? (
+                {!passportDetails ? (
                   <PassportApplication />
                 ) : (
-                  <div className="application-status">
-                    <h3>Your Passport</h3>
-                    <div className="status-card">
-                      <div className="status-header">
-                        <span className={`status-badge ${getStatusColor("APPROVED")}`}>
-                          {getStatusIcon("APPROVED")}
-                          Active
-                        </span>
-                      </div>
-                      {/* You can add more passport details here if you fetch them from backend */}
-                    </div>
-                  </div>
+                  <ViewPassport
+                    passportDetails={passportDetails}
+                    effectiveStatus={effectiveStatus}
+                    onRenewal={handleRenewal}
+                    renewalLoading={renewalLoading}
+                    renewalError={renewalError}
+                  />
                 )}
               </div>
             )}
 
-            {activeTab === "visa" && hasPassport && (
+            {activeTab === "visa" && canApplyForVisa && (
               <div className="visa-section">
-                <VisaApplication hasPassport={hasPassport} />
+                <div className="visa-header">
+                  <h2>Visa Applications</h2>
+                  <button
+                    className="btn btn-primary"
+                    onClick={() => setShowVisaApplication(true)}
+                  >
+                    <Plus size={20} />
+                    Apply for New Visa
+                  </button>
+                </div>
 
-                {visaApplications.length > 0 && (
+                {showVisaApplication && (
+                  <div className="visa-application-modal">
+                    <VisaApplication
+                      hasPassport={true}
+                      passportDetails={passportDetails}
+                      onSuccess={handleVisaApplicationSuccess}
+                      onCancel={() => setShowVisaApplication(false)}
+                    />
+                  </div>
+                )}
+
+                {showCancellation.show && (
+                  <div className="visa-cancellation-modal">
+                    <VisaCancellation
+                      visaId={showCancellation.visaId!}
+                      onSuccess={handleCancellationSuccess}
+                      onCancel={() => setShowCancellation({ show: false })}
+                    />
+                  </div>
+                )}
+
+                {visaApplications.length > 0 ? (
                   <div className="applications-list">
-                    <h3>Your Visa Applications</h3>
-                    {visaApplications.map((application: any) => (
-                      <div key={application.visaId || application.id} className="application-card">
-                        <div className="application-header">
-                          <h4>
-                            {application.country} - {application.visaType} Visa
-                          </h4>
-                          <span
-                            className={`status-badge ${getStatusColor(application.status)}`}
-                          >
-                            {getStatusIcon(application.status)}
-                            {application.status}
-                          </span>
-                        </div>
-                        <div className="application-details">
-                          <p>
-                            Application Date:{" "}
-                            {application.applicationDate ? new Date(application.applicationDate).toLocaleDateString() : "-"}
-                          </p>
-                          <p>
-                            Expected Date:{" "}
-                            {application.expiryDate ? new Date(application.expiryDate).toLocaleDateString() : "-"}
-                          </p>
-                        </div>
-                        {application.status === "APPROVED" && (
-                          <div className="application-actions">
-                            <button className="btn btn-outline">
-                              Download Visa
-                            </button>
-                            <button className="btn btn-danger">Cancel Visa</button>
+                    <h3>Your Visa Applications ({visaApplications.length})</h3>
+                    <div className="applications-grid">
+                      {visaApplications.map((application: any) => (
+                        <div
+                          key={application.visaId || application.id}
+                          className="application-card"
+                        >
+                          <div className="application-header">
+                            <h4>
+                              {application.destinationCountry ||
+                                application.country}{" "}
+                              - {application.visaType} Visa
+                            </h4>
+                            <span
+                              className={`status-badge ${getStatusColor(
+                                application.status
+                              )}`}
+                            >
+                              {getStatusIcon(application.status)}
+                              {application.status}
+                            </span>
                           </div>
-                        )}
-                      </div>
-                    ))}
+                          <div className="application-details">
+                            <p>
+                              <strong>Application ID:</strong>{" "}
+                              {application.visaId || application.id}
+                            </p>
+                            <p>
+                              <strong>Application Date:</strong>{" "}
+                              {application.applicationDate
+                                ? new Date(
+                                    application.applicationDate
+                                  ).toLocaleDateString()
+                                : "-"}
+                            </p>
+                            <p>
+                              <strong>Amount Paid:</strong> Rs.{" "}
+                              {application.amountPaid || 0}
+                            </p>
+                            {application.expiryDate && (
+                              <p>
+                                <strong>Expiry Date:</strong>{" "}
+                                {new Date(
+                                  application.expiryDate
+                                ).toLocaleDateString()}
+                              </p>
+                            )}
+                          </div>
+                          <div className="application-actions">
+                            {application.status === "APPROVED" && (
+                              <button className="btn btn-outline">
+                                Download Visa
+                              </button>
+                            )}
+                            {canCancelVisa(application) && (
+                              <button
+                                className="btn btn-danger"
+                                onClick={() =>
+                                  setShowCancellation({
+                                    show: true,
+                                    visaId: application.visaId || application.id,
+                                  })
+                                }
+                              >
+                                Cancel Visa
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="no-applications">
+                    <Globe size={48} />
+                    <h3>No Visa Applications</h3>
+                    <p>
+                      You haven't applied for any visas yet. Click "Apply for
+                      New Visa" to get started.
+                    </p>
                   </div>
                 )}
               </div>

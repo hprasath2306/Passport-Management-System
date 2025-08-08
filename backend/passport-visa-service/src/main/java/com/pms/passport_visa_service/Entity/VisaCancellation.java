@@ -18,7 +18,7 @@ public class VisaCancellation {
     private Integer cancellationId;
 
     @Column(name = "visa_application_id", nullable = false)
-    private Integer visaApplicationId;
+    private String visaApplicationId;
 
     @Column(name = "user_id", nullable = false)
     private String userId;
@@ -32,10 +32,6 @@ public class VisaCancellation {
     @Column(name = "refund_amount")
     private BigDecimal refundAmount = BigDecimal.ZERO;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "status")
-    private CancellationStatus status = CancellationStatus.REQUESTED;
-
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
@@ -44,15 +40,10 @@ public class VisaCancellation {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-    // Enum
-    public enum CancellationStatus {
-        REQUESTED, APPROVED, REJECTED
-    }
-
     // Constructors
     public VisaCancellation() {}
 
-    public VisaCancellation(Integer visaApplicationId, String userId, LocalDate cancellationDate, String cancellationReason) {
+    public VisaCancellation(String visaApplicationId, String userId, LocalDate cancellationDate, String cancellationReason) {
         this.visaApplicationId = visaApplicationId;
         this.userId = userId;
         this.cancellationDate = cancellationDate;
@@ -68,11 +59,11 @@ public class VisaCancellation {
         this.cancellationId = cancellationId;
     }
 
-    public Integer getVisaApplicationId() {
+    public String getVisaApplicationId() {
         return visaApplicationId;
     }
 
-    public void setVisaApplicationId(Integer visaApplicationId) {
+    public void setVisaApplicationId(String visaApplicationId) {
         this.visaApplicationId = visaApplicationId;
     }
 
@@ -108,14 +99,6 @@ public class VisaCancellation {
         this.refundAmount = refundAmount;
     }
 
-    public CancellationStatus getStatus() {
-        return status;
-    }
-
-    public void setStatus(CancellationStatus status) {
-        this.status = status;
-    }
-
     public LocalDateTime getCreatedAt() {
         return createdAt;
     }
@@ -142,7 +125,6 @@ public class VisaCancellation {
                 ", cancellationDate=" + cancellationDate +
                 ", cancellationReason='" + cancellationReason + '\'' +
                 ", refundAmount=" + refundAmount +
-                ", status=" + status +
                 ", createdAt=" + createdAt +
                 ", updatedAt=" + updatedAt +
                 '}';

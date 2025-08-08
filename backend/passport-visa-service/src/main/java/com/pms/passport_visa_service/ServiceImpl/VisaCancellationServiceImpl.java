@@ -24,7 +24,7 @@ public class VisaCancellationServiceImpl implements VisaCancellationService {
     @Override
     public VisaCancellation requestCancellation(VisaCancellation visaCancellation) {
         VisaApplication visa = visaApplicationRepository
-                .findById(Long.valueOf(visaCancellation.getVisaApplicationId()))
+                .findByVisaId((visaCancellation.getVisaApplicationId()))
                 .orElseThrow(() -> new RuntimeException("Visa application not found"));
 
         if (visa.getStatus() == VisaApplication.ApplicationStatus.CANCELLED) {
@@ -49,14 +49,6 @@ public class VisaCancellationServiceImpl implements VisaCancellationService {
     }
 
     @Override
-    public VisaCancellation updateCancellationStatus(Long cancellationId, VisaCancellation.CancellationStatus status) {
-        VisaCancellation cancellation = cancellationRepository.findById(cancellationId)
-                .orElseThrow(() -> new RuntimeException("Cancellation not found"));
-        cancellation.setStatus(status);
-        return cancellationRepository.save(cancellation);
-    }
-
-    @Override
     public List<VisaCancellation> getAllCancellations() {
         return cancellationRepository.findAll();
     }
@@ -67,7 +59,7 @@ public class VisaCancellationServiceImpl implements VisaCancellationService {
     }
 
     @Override
-    public List<VisaCancellation> getCancellationsByApplicationId(Integer visaApplicationId) {
+    public List<VisaCancellation> getCancellationsByApplicationId(String visaApplicationId) {
         return cancellationRepository.findByVisaApplicationId(visaApplicationId);
     }
 }

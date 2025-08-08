@@ -9,5 +9,5 @@ import java.util.List;
 @Repository
 public interface VisaCancellationRepository extends JpaRepository<VisaCancellation, Long> {
     List<VisaCancellation> findByUserId(String userId);
-    List<VisaCancellation> findByVisaApplicationId(Integer visaApplicationId);
+    List<VisaCancellation> findByVisaApplicationId(String visaApplicationId);
 }

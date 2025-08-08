@@ -17,7 +17,6 @@ const PassportApplication: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // Fetch service types and booklet types from backend
     const fetchTypes = async () => {
       try {
         const [serviceRes, bookletRes] = await Promise.all([
@@ -77,7 +76,7 @@ const PassportApplication: React.FC = () => {
           <h3>Application Submitted Successfully!</h3>
           <p>Your passport application has been submitted.</p>
           <button className="btn btn-primary" onClick={() => setShowSuccess(false)}>
-            You can apply for visa now
+            You can refresh the page to apply for visa
           </button>
         </div>
       </div>
@@ -88,22 +87,10 @@ const PassportApplication: React.FC = () => {
     <div className="application-container">
       <div className="application-header">
         <h2>Passport Application</h2>
-        <p>Apply for a new passport or renew your existing one</p>
+        {/* <p>Apply for a new passport or renew your existing one</p> */}
       </div>
       {error && <div className="error-message">{error}</div>}
       <form onSubmit={handleSubmit} className="application-form">
-        <div className="form-group">
-          <label className="checkbox-label">
-            <input
-              type="checkbox"
-              name="isRenewal"
-              checked={formData.isRenewal}
-              onChange={handleChange}
-              className="checkbox"
-            />
-            This is a passport renewal
-          </label>
-        </div>
         <div className="form-group">
           <label htmlFor="serviceTypeId" className="form-label">Service Type</label>
           <select

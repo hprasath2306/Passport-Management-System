@@ -1,36 +1,90 @@
-import React, { useState } from 'react';
-import { countries, visaTypes } from '../../services/mockData';
+import React, { useState } from "react";
+import { X } from "lucide-react";
+import { countries, visaTypes } from "../../services/mockData";
+import { visaService } from "../../services/visaService";
+import { useAuth } from "../../context/AuthContext";
+import { type PassportDetails } from "../../services/passportService";
 
 interface VisaApplicationProps {
   hasPassport: boolean;
+  passportDetails?: PassportDetails | null;
+  onSuccess?: () => void;
+  onCancel?: () => void;
 }
 
-const VisaApplication: React.FC<VisaApplicationProps> = ({ hasPassport }) => {
+const VisaApplication: React.FC<VisaApplicationProps> = ({
+  hasPassport,
+  passportDetails,
+  onSuccess,
+  onCancel,
+}) => {
+  const { user } = useAuth();
   const [formData, setFormData] = useState({
-    country: '',
-    visaType: '',
-    travelDate: '',
-    returnDate: '',
-    purpose: ''
+    destinationCountry: "",
+    visaType: "",
+    purpose: "",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [showSuccess, setShowSuccess] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  // Visa type pricing (you can move this to a service or config)
+  const visaPricing: Record<string, number> = {
+    Tourist: 1500,
+    Business: 2000,
+    Student: 1000,
+    Work: 3000,
+    Transit: 500,
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
+    setError(null);
 
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    try {
+      if (!user?.userId || !passportDetails?.passportId) {
+        throw new Error("User ID or Passport ID not found");
+      }
 
-    setShowSuccess(true);
+      const visaApplicationData = {
+        userId: user.userId,
+        passportId: passportDetails.passportId,
+        destinationCountry: formData.destinationCountry,
+        visaType: formData.visaType,
+        amountPaid: visaPricing[formData.visaType] || 150,
+      };
+
+      await visaService.applyVisa(visaApplicationData);
+
+      // Reset form
+      setFormData({
+        destinationCountry: "",
+        visaType: "",
+        purpose: "",
+      });
+
+      // Call success callback
+      if (onSuccess) {
+        onSuccess();
+      }
+    } catch (err: any) {
+      setError(
+        err.response?.data?.message ||
+          "Failed to submit visa application. Please try again."
+      );
+    }
+
     setIsSubmitting(false);
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLSelectElement | HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<
+      HTMLSelectElement | HTMLInputElement | HTMLTextAreaElement
+    >
+  ) => {
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value
+      [e.target.name]: e.target.value,
     });
   };
 
@@ -46,52 +100,47 @@ const VisaApplication: React.FC<VisaApplicationProps> = ({ hasPassport }) => {
     );
   }
 
-  if (showSuccess) {
-    return (
-      <div className="success-container">
-        <div className="success-card">
-          <h3>Visa Application Submitted!</h3>
-          <p>Your visa application for {formData.country} has been submitted.</p>
-          <p><strong>Application ID:</strong> VA{Date.now()}</p>
-          <p><strong>Expected Processing Time:</strong> 15-30 working days</p>
-          <button 
-            className="btn btn-primary"
-            onClick={() => setShowSuccess(false)}
-          >
-            Apply for Another Visa
-          </button>
-        </div>
-      </div>
-    );
-  }
+  const selectedVisaPrice = visaPricing[formData.visaType] || 0;
 
   return (
-    <div className="application-container">
+    <div className="visa-application-container">
       <div className="application-header">
-        <h2>Visa Application</h2>
-        <p>Apply for a visa to travel abroad</p>
+        <h2>Apply for New Visa</h2>
+        {onCancel && (
+          <button className="close-btn" onClick={onCancel}>
+            <X size={24} />
+          </button>
+        )}
       </div>
+
+      {error && <div className="error-message">{error}</div>}
 
       <form onSubmit={handleSubmit} className="application-form">
         <div className="form-row">
           <div className="form-group">
-            <label htmlFor="country" className="form-label">Destination Country</label>
+            <label htmlFor="destinationCountry" className="form-label">
+              Destination Country *
+            </label>
             <select
-              id="country"
-              name="country"
-              value={formData.country}
+              id="destinationCountry"
+              name="destinationCountry"
+              value={formData.destinationCountry}
               onChange={handleChange}
               className="form-input"
               required
             >
               <option value="">Select Country</option>
-              {countries.map(country => (
-                <option key={country} value={country}>{country}</option>
+              {countries.map((country) => (
+                <option key={country} value={country}>
+                  {country}
+                </option>
               ))}
             </select>
           </div>
           <div className="form-group">
-            <label htmlFor="visaType" className="form-label">Visa Type</label>
+            <label htmlFor="visaType" className="form-label">
+              Visa Type *
+            </label>
             <select
               id="visaType"
               name="visaType"
@@ -101,44 +150,19 @@ const VisaApplication: React.FC<VisaApplicationProps> = ({ hasPassport }) => {
               required
             >
               <option value="">Select Visa Type</option>
-              {visaTypes.map(type => (
-                <option key={type} value={type}>{type}</option>
+              {visaTypes.map((type) => (
+                <option key={type} value={type}>
+                  {type} - Rs. {visaPricing[type] || 1500}
+                </option>
               ))}
             </select>
           </div>
         </div>
 
-        <div className="form-row">
-          <div className="form-group">
-            <label htmlFor="travelDate" className="form-label">Travel Date</label>
-            <input
-              type="date"
-              id="travelDate"
-              name="travelDate"
-              value={formData.travelDate}
-              onChange={handleChange}
-              className="form-input"
-              min={new Date().toISOString().split('T')[0]}
-              required
-            />
-          </div>
-          <div className="form-group">
-            <label htmlFor="returnDate" className="form-label">Return Date</label>
-            <input
-              type="date"
-              id="returnDate"
-              name="returnDate"
-              value={formData.returnDate}
-              onChange={handleChange}
-              className="form-input"
-              min={formData.travelDate || new Date().toISOString().split('T')[0]}
-              required
-            />
-          </div>
-        </div>
-
         <div className="form-group">
-          <label htmlFor="purpose" className="form-label">Purpose of Travel</label>
+          <label htmlFor="purpose" className="form-label">
+            Purpose of Travel
+          </label>
           <textarea
             id="purpose"
             name="purpose"
@@ -147,17 +171,30 @@ const VisaApplication: React.FC<VisaApplicationProps> = ({ hasPassport }) => {
             className="form-textarea"
             rows={4}
             placeholder="Please describe the purpose of your travel..."
-            required
           />
         </div>
 
-        <button 
-          type="submit" 
-          className="btn btn-primary"
-          disabled={isSubmitting}
-        >
-          {isSubmitting ? 'Submitting Application...' : 'Submit Visa Application'}
-        </button>
+        <div className="form-actions">
+          {onCancel && (
+            <button
+              type="button"
+              className="btn btn-outline"
+              onClick={onCancel}
+              disabled={isSubmitting}
+            >
+              Cancel
+            </button>
+          )}
+          <button
+            type="submit"
+            className="btn btn-primary"
+            disabled={isSubmitting}
+          >
+            {isSubmitting
+              ? "Submitting Application..."
+              : `Submit Application - Rs. ${selectedVisaPrice}`}
+          </button>
+        </div>
       </form>
     </div>
   );
