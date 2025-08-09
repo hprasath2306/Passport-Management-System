@@ -65,25 +65,47 @@ export interface BookletType {
   status: 'ACTIVE' | 'INACTIVE';
 }
 
-export interface PassportApplication {
-  id: string;
-  userId: string;
-  applicantName: string;
-  serviceType: string;
-  bookletType: string;
-  status: 'PENDING' | 'APPROVED' | 'REJECTED' | 'PROCESSING';
-  applicationDate: string;
-  expectedCompletionDate: string;
-}
-
-export interface VisaApplication {
-  id: string;
+export interface BackendPassportApplication {
+  passportApplicationId: number;
   userId: string;
   passportId: string;
-  applicantName: string;
-  country: string;
-  visaType: string;
-  status: 'PENDING' | 'APPROVED' | 'REJECTED' | 'CANCELLED';
+  serviceTypeId: number;
+  bookletTypeId: number;
+  passportType: 'NEW' | 'RENEWAL';
   applicationDate: string;
-  expectedCompletionDate: string;
+  issueDate?: string;
+  expiryDate?: string;
+  status: 'PENDING' | 'ISSUED' | 'CANCELLED';
+  amountPaid: number;
+  previousPassportId?: string;
+  processingDays?: number;
+  userFirstName: string;
+  userLastName: string;
+  userPhone: string;
+  userEmail: string;
+  userCitizenType: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface BackendVisaApplication {
+  visaApplicationId: number;
+  userId: string;
+  visaId: string;
+  passportId: string;
+  destinationCountry: string;
+  visaType: string;
+  applicationDate: string;
+  issueDate?: string;
+  expiryDate?: string;
+  status: 'PENDING' | 'ISSUED' | 'CANCELLED';
+  amountPaid: number;
+  validityYears: number;
+  userFirstName: string;
+  userLastName: string;
+  userPhone: string;
+  userEmail: string;
+  userOccupation: string;
+  createdAt: string;
+  updatedAt: string;
 }

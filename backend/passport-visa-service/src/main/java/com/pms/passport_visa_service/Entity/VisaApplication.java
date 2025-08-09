@@ -249,6 +249,6 @@ public class VisaApplication {
     }
 
     public enum ApplicationStatus {
-        PENDING, ISSUED, EXPIRED, CANCELLED
+        PENDING, ISSUED, CANCELLED
     }
 }

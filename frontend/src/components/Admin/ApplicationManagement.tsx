@@ -1,54 +1,126 @@
-import React, { useState } from 'react';
-import { mockPassportApplications, mockVisaApplications } from '../../services/mockData';
-import type { PassportApplication, VisaApplication } from '../../types';
-import { CheckCircle, XCircle, Clock, Eye } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import axiosInstance from '../../services/axiosInstance';
+import { getStatusColor, getStatusIcon } from '../../utils';
+import { PassportList } from './PassportList/PassportList';
+import { VisaList } from './VisaList/VisaList';
+import { PassportDetailsModal } from './Modals/PassportDetailsModal/PassportDetailsModal';
+import { VisaDetailsModal } from './Modals/VisaDetailsModal/VisaDetailsModal';
+import type { BackendPassportApplication, BackendVisaApplication } from '../../types';
 
 const ApplicationManagement: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'passport' | 'visa'>('passport');
-  const [passportApps, setPassportApps] = useState<PassportApplication[]>(mockPassportApplications);
-  const [visaApps, setVisaApps] = useState<VisaApplication[]>(mockVisaApplications);
+  const [passportApps, setPassportApps] = useState<BackendPassportApplication[]>([]);
+  const [visaApps, setVisaApps] = useState<BackendVisaApplication[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  
+  // Modal states
+  const [selectedPassport, setSelectedPassport] = useState<BackendPassportApplication | null>(null);
+  const [selectedVisa, setSelectedVisa] = useState<BackendVisaApplication | null>(null);
+  const [showPassportModal, setShowPassportModal] = useState(false);
+  const [showVisaModal, setShowVisaModal] = useState(false);
 
-  const handleStatusChange = (id: string, newStatus: string, type: 'passport' | 'visa') => {
-    if (type === 'passport') {
+  useEffect(() => {
+    fetchApplications();
+  }, [activeTab]);
+
+  const fetchApplications = async () => {
+    setLoading(true);
+    setError(null);
+    
+    try {
+      if (activeTab === 'passport') {
+        const response = await axiosInstance.get('/api/passport/all');
+        setPassportApps(response.data);
+      } else {
+        const response = await axiosInstance.get('/api/visa/all');
+        setVisaApps(response.data);
+      }
+    } catch (err: any) {
+      setError(err.response?.data?.message || 'Failed to fetch applications');
+      console.error('Error fetching applications:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handlePassportStatusChange = async (
+    applicationId: number, 
+    newStatus: string
+  ) => {
+    try {
+      await axiosInstance.put(
+        `/api/passport/status/${applicationId}?status=${newStatus}`
+      );
+      
+      // Update local state
       setPassportApps(apps => 
         apps.map(app => 
-          app.id === id 
-            ? { ...app, status: newStatus as PassportApplication['status'] }
+          app.passportApplicationId === applicationId 
+            ? { ...app, status: newStatus as any }
             : app
         )
       );
-    } else {
+    } catch (err: any) {
+      setError(err.response?.data?.message || 'Failed to update status');
+      console.error('Error updating passport status:', err);
+    }
+  };
+
+  const handleVisaStatusChange = async (
+    visaId: string, 
+    newStatus: string
+  ) => {
+    try {
+      await axiosInstance.put(
+        `/api/visa/${visaId}/status?status=${newStatus}`
+      );
+      
+      // Update local state
       setVisaApps(apps => 
         apps.map(app => 
-          app.id === id 
-            ? { ...app, status: newStatus as VisaApplication['status'] }
+          app.visaId === visaId 
+            ? { ...app, status: newStatus as any }
             : app
         )
       );
+    } catch (err: any) {
+      setError(err.response?.data?.message || 'Failed to update status');
+      console.error('Error updating visa status:', err);
     }
   };
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'APPROVED': return 'status-approved';
-      case 'PENDING': return 'status-pending';
-      case 'PROCESSING': return 'status-processing';
-      case 'REJECTED': return 'status-rejected';
-      case 'CANCELLED': return 'status-cancelled';
-      default: return 'status-pending';
-    }
+  const handleViewPassportDetails = (passport: BackendPassportApplication) => {
+    setSelectedPassport(passport);
+    setShowPassportModal(true);
   };
 
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case 'APPROVED': return <CheckCircle size={16} />;
-      case 'PENDING': return <Clock size={16} />;
-      case 'PROCESSING': return <Clock size={16} />;
-      case 'REJECTED': return <XCircle size={16} />;
-      case 'CANCELLED': return <XCircle size={16} />;
-      default: return <Clock size={16} />;
-    }
+  const handleViewVisaDetails = (visa: BackendVisaApplication) => {
+    setSelectedVisa(visa);
+    setShowVisaModal(true);
   };
+
+  const closePassportModal = () => {
+    setShowPassportModal(false);
+    setSelectedPassport(null);
+  };
+
+  const closeVisaModal = () => {
+    setShowVisaModal(false);
+    setSelectedVisa(null);
+  };
+  
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString();
+  };
+
+  if (loading) {
+    return (
+      <div className="management-container">
+        <div className="loading">Loading applications...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="management-container">
@@ -70,108 +142,56 @@ const ApplicationManagement: React.FC = () => {
         </div>
       </div>
 
-      {activeTab === 'passport' && (
-        <div className="data-table">
-          <table>
-            <thead>
-              <tr>
-                <th>Application ID</th>
-                <th>Applicant Name</th>
-                <th>Service Type</th>
-                <th>Booklet Type</th>
-                <th>Application Date</th>
-                <th>Status</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {passportApps.map(app => (
-                <tr key={app.id}>
-                  <td>{app.id}</td>
-                  <td>{app.applicantName}</td>
-                  <td>{app.serviceType}</td>
-                  <td>{app.bookletType}</td>
-                  <td>{new Date(app.applicationDate).toLocaleDateString()}</td>
-                  <td>
-                    <span className={`status-badge ${getStatusColor(app.status)}`}>
-                      {getStatusIcon(app.status)}
-                      {app.status}
-                    </span>
-                  </td>
-                  <td>
-                    <div className="action-buttons">
-                      <select
-                        value={app.status}
-                        onChange={(e) => handleStatusChange(app.id, e.target.value, 'passport')}
-                        className="status-select"
-                      >
-                        <option value="PENDING">Pending</option>
-                        <option value="PROCESSING">Processing</option>
-                        <option value="APPROVED">Approved</option>
-                        <option value="REJECTED">Rejected</option>
-                      </select>
-                      <button className="btn-icon">
-                        <Eye size={16} />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+      {error && (
+        <div className="error-message">
+          {error}
+          <button onClick={fetchApplications} className="retry-btn">
+            Retry
+          </button>
         </div>
       )}
 
+      {activeTab === 'passport' && (
+        <PassportList 
+          passportApps={passportApps} 
+          formatDate={formatDate} 
+          getStatusColor={getStatusColor} 
+          getStatusIcon={getStatusIcon} 
+          handlePassportStatusChange={handlePassportStatusChange}
+          onViewDetails={handleViewPassportDetails}
+        />
+      )}
+
       {activeTab === 'visa' && (
-        <div className="data-table">
-          <table>
-            <thead>
-              <tr>
-                <th>Application ID</th>
-                <th>Applicant Name</th>
-                <th>Country</th>
-                <th>Visa Type</th>
-                <th>Application Date</th>
-                <th>Status</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {visaApps.map(app => (
-                <tr key={app.id}>
-                  <td>{app.id}</td>
-                  <td>{app.applicantName}</td>
-                  <td>{app.country}</td>
-                  <td>{app.visaType}</td>
-                  <td>{new Date(app.applicationDate).toLocaleDateString()}</td>
-                  <td>
-                    <span className={`status-badge ${getStatusColor(app.status)}`}>
-                      {getStatusIcon(app.status)}
-                      {app.status}
-                    </span>
-                  </td>
-                  <td>
-                    <div className="action-buttons">
-                      <select
-                        value={app.status}
-                        onChange={(e) => handleStatusChange(app.id, e.target.value, 'visa')}
-                        className="status-select"
-                      >
-                        <option value="PENDING">Pending</option>
-                        <option value="APPROVED">Approved</option>
-                        <option value="REJECTED">Rejected</option>
-                        <option value="CANCELLED">Cancelled</option>
-                      </select>
-                      <button className="btn-icon">
-                        <Eye size={16} />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <VisaList 
+          visaApps={visaApps} 
+          formatDate={formatDate} 
+          getStatusColor={getStatusColor} 
+          getStatusIcon={getStatusIcon} 
+          handleVisaStatusChange={handleVisaStatusChange}
+          onViewDetails={handleViewVisaDetails}
+        />
+      )}
+
+      {/* Modals */}
+      {showPassportModal && selectedPassport && (
+        <PassportDetailsModal
+          passport={selectedPassport}
+          onClose={closePassportModal}
+          formatDate={formatDate}
+          getStatusColor={getStatusColor}
+          getStatusIcon={getStatusIcon}
+        />
+      )}
+
+      {showVisaModal && selectedVisa && (
+        <VisaDetailsModal
+          visa={selectedVisa}
+          onClose={closeVisaModal}
+          formatDate={formatDate}
+          getStatusColor={getStatusColor}
+          getStatusIcon={getStatusIcon}
+        />
       )}
     </div>
   );

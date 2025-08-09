@@ -1,17 +1,87 @@
-import React, { useState } from 'react';
-import { Settings, FileText, Users, BarChart3, Book } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Settings, FileText, BarChart3, Book } from 'lucide-react';
 import ServiceTypeManagement from './ServiceTypeManagement';
 import BookletTypeManagement from './BookletTypeManagement';
 import ApplicationManagement from './ApplicationManagement';
+import axiosInstance from '../../services/axiosInstance';
+import { Overviewgrid } from './Overviewgrid/Overviewgrid';
+
+interface DashboardStats {
+  totalApplications: number;
+  pendingApplications: number;
+  approvedApplications: number;
+  cancelledApplications: number;
+  totalPassportApplications: number;
+  totalVisaApplications: number;
+}
 
 const AdminDashboard: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'overview' | 'services' | 'booklets' | 'applications'>('overview');
+  const [stats, setStats] = useState<DashboardStats>({
+    totalApplications: 0,
+    pendingApplications: 0,
+    approvedApplications: 0,
+    cancelledApplications: 0,
+    totalPassportApplications: 0,
+    totalVisaApplications: 0
+  });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const stats = {
-    totalApplications: 125,
-    pendingApplications: 45,
-    approvedApplications: 72,
-    rejectedApplications: 8
+  useEffect(() => {
+    if (activeTab === 'overview') {
+      fetchDashboardStats();
+    }
+  }, [activeTab]);
+
+  const fetchDashboardStats = async () => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      // Fetch both passport and visa applications
+      const [passportResponse, visaResponse] = await Promise.all([
+        axiosInstance.get('/api/passport/all'),
+        axiosInstance.get('/api/visa/all')
+      ]);
+
+      const passportApps = passportResponse.data;
+      const visaApps = visaResponse.data;
+
+      // Calculate statistics
+      const totalPassportApplications = passportApps.length;
+      const totalVisaApplications = visaApps.length;
+      const totalApplications = totalPassportApplications + totalVisaApplications;
+
+      // Count by status for passport applications
+      const passportStats = passportApps.reduce((acc: any, app: any) => {
+        acc[app.status.toLowerCase()] = (acc[app.status.toLowerCase()] || 0) + 1;
+        return acc;
+      }, {});
+
+      // Count by status for visa applications
+      const visaStats = visaApps.reduce((acc: any, app: any) => {
+        acc[app.status.toLowerCase()] = (acc[app.status.toLowerCase()] || 0) + 1;
+        return acc;
+      }, {});
+
+      // Combine statistics
+      const combinedStats: DashboardStats = {
+        totalApplications,
+        totalPassportApplications,
+        totalVisaApplications,
+        pendingApplications: (passportStats.pending || 0) + (visaStats.pending || 0),
+        approvedApplications: (passportStats.issued || 0) + (visaStats.issued || 0),
+        cancelledApplications: (passportStats.cancelled || 0) + (visaStats.cancelled || 0)
+      };
+
+      setStats(combinedStats);
+    } catch (err: any) {
+      setError(err.response?.data?.message || 'Failed to fetch dashboard statistics');
+      console.error('Error fetching dashboard stats:', err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -54,46 +124,27 @@ const AdminDashboard: React.FC = () => {
 
       <div className="dashboard-content">
         {activeTab === 'overview' && (
-          <div className="overview-grid">
-            <div className="stat-card">
-              <div className="stat-icon total">
-                <FileText size={24} />
+          <div className="overview-section">
+            {loading && (
+              <div className="loading-stats">
+                <p>Loading dashboard statistics...</p>
               </div>
-              <div className="stat-content">
-                <h3>Total Applications</h3>
-                <p className="stat-number">{stats.totalApplications}</p>
-              </div>
-            </div>
+            )}
 
-            <div className="stat-card">
-              <div className="stat-icon pending">
-                <Users size={24} />
+            {error && (
+              <div className="error-message">
+                {error}
+                <button onClick={fetchDashboardStats} className="retry-btn">
+                  Retry
+                </button>
               </div>
-              <div className="stat-content">
-                <h3>Pending Review</h3>
-                <p className="stat-number">{stats.pendingApplications}</p>
-              </div>
-            </div>
+            )}
 
-            <div className="stat-card">
-              <div className="stat-icon approved">
-                <BarChart3 size={24} />
-              </div>
-              <div className="stat-content">
-                <h3>Approved</h3>
-                <p className="stat-number">{stats.approvedApplications}</p>
-              </div>
-            </div>
-
-            <div className="stat-card">
-              <div className="stat-icon rejected">
-                <Settings size={24} />
-              </div>
-              <div className="stat-content">
-                <h3>Rejected</h3>
-                <p className="stat-number">{stats.rejectedApplications}</p>
-              </div>
-            </div>
+            {!loading && !error && (
+              <>
+                <Overviewgrid stats={stats} />
+              </>
+            )}
           </div>
         )}
 
