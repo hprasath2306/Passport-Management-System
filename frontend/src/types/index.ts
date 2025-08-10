@@ -1,39 +1,21 @@
 export interface User {
-  userId: string;
-  firstName: string;
-  lastName: string;
-  dateOfBirth: string;
-  phoneNumber: string;
-  email: string;
-  address: string;
-  city: string;
-  state: string;
-  pincode: string;
-  occupation: string;
-  registrationType: string;
-  role: 'ADMIN' | 'USER';
-  passportId?: string;
-  visaId?: string;
-}
-
-export interface RegisterData {
-  firstName: string;
-  lastName: string;
-  dateOfBirth: string;
-  phoneNumber: string;
-  email: string;
-  password: string;
-  address: string;
-  city: string;
-  state: string;
-  pincode: string;
-  occupation: string;
-  registrationType: string;
-}
-
-export interface LoginData {
-  customerIdOrPhone: string;
-  password: string;
+    userId: string;
+    customerId: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+    phoneNumber: string;
+    dateOfBirth: string;
+    age: number;
+    address: string;
+    pincode: string;
+    city: string;
+    state: string;
+    role: 'ADMIN' | 'USER';
+    citizenType: 'INFANT' | 'CHILDREN' | 'TEEN' | 'ADULT' | 'SENIOR_CITIZEN';
+    occupation: string;
+    registrationType: string;
+    createdAt: Date;
 }
 
 export interface AuthResponse {
@@ -42,40 +24,47 @@ export interface AuthResponse {
   role: 'ADMIN' | 'USER';
 }
 
-export interface RegisterResponse {
-  user: User;
-  customerId?: string;
+export interface LoginData {
+  customerIdOrPhone: string;
+  password: string;
 }
 
-export interface ServiceType {
-  id: string;
-  name: string;
-  description: string;
-  price: number;
-  processingTime: string;
-  status: 'ACTIVE' | 'INACTIVE';
+export interface RegisterData {
+    firstName: string;
+    lastName: string;
+    dateOfBirth: string;
+    phoneNumber: string;
+    email: string;
+    password: string;
+    address: string;
+    city: string;
+    state: string;
+    pincode: string;
+    occupation: string;
+    registrationType: string;
 }
 
-export interface BookletType {
-  id: string;
-  name: string;
-  pages: number;
-  validity: string;
-  price: number;
-  status: 'ACTIVE' | 'INACTIVE';
+export interface AuthContextType {
+  user: User | null;
+  token: string | null;
+  isLoading: boolean;
+  login: (data: LoginData) => Promise<boolean>;
+  register: (data: RegisterData) => Promise<User | void | null>;
+  logout: () => void;
+  isAdmin: () => boolean;
 }
 
-export interface BackendPassportApplication {
+export interface PassportDetails {
   passportApplicationId: number;
   userId: string;
   passportId: string;
   serviceTypeId: number;
   bookletTypeId: number;
-  passportType: 'NEW' | 'RENEWAL';
+  passportType: "NEW" | "RENEWAL";
   applicationDate: string;
   issueDate?: string;
   expiryDate?: string;
-  status: 'PENDING' | 'ISSUED' | 'CANCELLED';
+  status: "PENDING" | "ISSUED" | "CANCELLED";
   amountPaid: number;
   previousPassportId?: string;
   processingDays?: number;
@@ -88,7 +77,7 @@ export interface BackendPassportApplication {
   updatedAt: string;
 }
 
-export interface BackendVisaApplication {
+export interface AdminVisaApplication {
   visaApplicationId: number;
   userId: string;
   visaId: string;

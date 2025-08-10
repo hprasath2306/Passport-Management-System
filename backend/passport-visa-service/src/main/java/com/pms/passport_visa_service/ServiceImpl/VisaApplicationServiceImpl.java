@@ -38,6 +38,15 @@ public class VisaApplicationServiceImpl implements VisaApplicationService {
             throw new RuntimeException("Valid passport required for visa application");
         }
 
+        if (hasActiveVisaForCountry(visaApplication.getUserId(),
+                visaApplication.getDestinationCountry())) {
+            throw new RuntimeException(
+                    "User already has an active visa for " +
+                            visaApplication.getDestinationCountry() +
+                            ". Cannot apply for another visa until current visa expires."
+            );
+        }
+
         visaApplication.setVisaId(generateVisaId());
         visaApplication.setApplicationDate(LocalDate.now());
 
@@ -108,6 +117,19 @@ public class VisaApplicationServiceImpl implements VisaApplicationService {
         Random random = new Random();
         int randomNumber = 1000 + random.nextInt(9000);
         return "VISA-" + randomNumber;
+    }
+
+    private boolean hasActiveVisaForCountry(String userId, String destinationCountry) {
+        List<VisaApplication> userVisas = visaApplicationRepository.findByUserId(userId);
+        LocalDate currentDate = LocalDate.now();
+
+        return userVisas.stream()
+                .anyMatch(visa ->
+                        visa.getDestinationCountry().equalsIgnoreCase(destinationCountry) &&
+                                visa.getExpiryDate().isAfter(currentDate) &&
+                                (visa.getStatus() == VisaApplication.ApplicationStatus.ISSUED ||
+                                        visa.getStatus() == VisaApplication.ApplicationStatus.PENDING)
+                );
     }
 
     private UserResponseDto fetchUserDetails(String userId) {

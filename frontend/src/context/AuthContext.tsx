@@ -1,16 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import type { User, AuthResponse, LoginData, RegisterData, RegisterResponse } from '../types';
+import type { User, AuthResponse, LoginData, RegisterData, AuthContextType } from '../types';
 import { authService } from '../services/authService';
-
-interface AuthContextType {
-  user: User | null;
-  token: string | null;
-  isLoading: boolean;
-  login: (data: LoginData) => Promise<boolean>;
-  register: (data: RegisterData) => Promise<RegisterResponse | void | null>;
-  logout: () => void;
-  isAdmin: () => boolean;
-}
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -52,7 +42,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const register = async (data: RegisterData): Promise<RegisterResponse | void | null> => {
+  const register = async (data: RegisterData): Promise<User | void | null> => {
     try {
       const response = await authService.register(data);
       return response;

@@ -1,53 +1,9 @@
+import type { PassportDetails } from '../types';
 import axiosInstance from './axiosInstance';
-
-export interface AdminPassportApplication {
-  passportApplicationId: number;
-  userId: string;
-  passportId: string;
-  serviceTypeId: number;
-  bookletTypeId: number;
-  passportType: 'NEW' | 'RENEWAL';
-  applicationDate: string;
-  issueDate?: string;
-  expiryDate?: string;
-  status: 'PENDING' | 'PROCESSING' | 'APPROVED' | 'REJECTED' | 'CANCELLED';
-  amountPaid: number;
-  previousPassportId?: string;
-  processingDays?: number;
-  userFirstName: string;
-  userLastName: string;
-  userPhone: string;
-  userEmail: string;
-  userCitizenType: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface AdminVisaApplication {
-  visaApplicationId: number;
-  userId: string;
-  visaId: string;
-  passportId: string;
-  destinationCountry: string;
-  visaType: string;
-  applicationDate: string;
-  issueDate?: string;
-  expiryDate?: string;
-  status: 'PENDING' | 'PROCESSING' | 'APPROVED' | 'REJECTED' | 'CANCELLED';
-  amountPaid: number;
-  validityYears: number;
-  userFirstName: string;
-  userLastName: string;
-  userPhone: string;
-  userEmail: string;
-  userOccupation: string;
-  createdAt: string;
-  updatedAt: string;
-}
+import type { AdminVisaApplication } from '../types';
 
 export const adminService = {
-  // Passport Management
-  async getAllPassportApplications(): Promise<AdminPassportApplication[]> {
+  async getAllPassportApplications(): Promise<PassportDetails[]> {
     try {
       const response = await axiosInstance.get('/api/passport/all');
       return response.data;
@@ -60,7 +16,7 @@ export const adminService = {
   async updatePassportStatus(
     applicationId: number, 
     status: string
-  ): Promise<AdminPassportApplication> {
+  ): Promise<PassportDetails> {
     try {
       const response = await axiosInstance.put(
         `/api/passport/status/${applicationId}?status=${status}`
@@ -72,7 +28,7 @@ export const adminService = {
     }
   },
 
-  async getPassportById(passportId: string): Promise<AdminPassportApplication> {
+  async getPassportById(passportId: string): Promise<PassportDetails> {
     try {
       const response = await axiosInstance.get(`/api/passport/${passportId}`);
       return response.data;
@@ -82,7 +38,6 @@ export const adminService = {
     }
   },
 
-  // Visa Management
   async getAllVisaApplications(): Promise<AdminVisaApplication[]> {
     try {
       const response = await axiosInstance.get('/api/visa/all');

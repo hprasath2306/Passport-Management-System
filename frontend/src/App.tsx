@@ -1,51 +1,35 @@
-import React, { useState } from 'react';
-import { AuthProvider, useAuth } from './context/AuthContext';
-import Login from './components/Auth/Login';
-import Register from './components/Auth/Register';
-import Header from './components/Layout/Header';
-import UserDashboard from './components/User/UserDashboard';
-import AdminDashboard from './components/Admin/AdminDashboard';
-import ProtectedRoute from './components/ProtectedRoute';
+import { Routes, Route, Navigate } from 'react-router-dom';
+import { useAuth } from './context/AuthContext';
+import LandingPage from './pages/Landing/LandingPage';
+import Login from './pages/Auth/Login/Login';
+import Register from './pages/Auth/Register/Register';
+import UserDashboard from './pages/UserDashboard/UserDashboard';
+import Header from './components/Header/Header';
+import AdminDashboard from './pages/AdminDashboard/AdminDashboard';
 
-const AuthWrapper: React.FC = () => {
-  const [isLogin, setIsLogin] = useState(true);
-  const { user, isLoading } = useAuth();
+export default function App() {
+  const { user, isLoading, isAdmin } = useAuth();
 
-  if (isLoading) {
-    return (
-      <div className="loading-container">
-        <div className="loading-spinner"></div>
-        <p>Loading...</p>
-      </div>
-    );
-  }
+  if (isLoading) return <div>Loading...</div>;
 
   if (!user) {
-    return isLogin ? (
-      <Login onSwitchToRegister={() => setIsLogin(false)} />
-    ) : (
-      <Register onSwitchToLogin={() => setIsLogin(true)} />
+    return (
+      <Routes>
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
     );
   }
 
   return (
-    <div className="app">
+    <>
       <Header />
-      <main className="main-content">
-        <ProtectedRoute>
-          {user.role === 'ADMIN' ? <AdminDashboard /> : <UserDashboard />}
-        </ProtectedRoute>
-      </main>
-    </div>
-  );
-};
-
-function App() {
-  return (
-    <AuthProvider>
-      <AuthWrapper />
-    </AuthProvider>
+      <Routes>
+        <Route path="/dashboard" element={isAdmin() ? <AdminDashboard /> : <UserDashboard />} />
+        <Route path="*" element={<Navigate to="/dashboard" replace />} />
+      </Routes>
+    </>
   );
 }
-
-export default App;
