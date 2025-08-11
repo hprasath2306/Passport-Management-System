@@ -1,6 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { useAuth } from "../../context/AuthContext";
-import { Import as Passport, Globe, FileText, Plus } from "lucide-react";
+import {
+  Import as Passport,
+  Globe,
+  FileText,
+  Plus,
+  XCircle,
+} from "lucide-react";
 import PassportApplication from "./PassportApplication";
 import VisaApplication from "./VisaApplication";
 import VisaCancellation from "./VisaCancellation/VisaCancellation";
@@ -271,6 +277,26 @@ const UserDashboard: React.FC = () => {
                           key={application.visaId || application.id}
                           className="application-card"
                         >
+                          {application.status === "CANCELLED" && (
+                            <div className="cancellation-alert">
+                              <div className="alert-content">
+                                <XCircle size={24} className="alert-icon" />
+                                <div className="alert-text">
+                                  <h4>Visa Application Cancelled</h4>
+                                  <p>
+                                    Your visa application has been cancelled by
+                                    the admin.
+                                  </p>
+                                  {application.cancellationComment && (
+                                    <div className="cancellation-reason">
+                                      <strong>Reason:</strong>{" "}
+                                      {application.cancellationComment}
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          )}
                           <div className="application-header">
                             <h4>
                               {application.destinationCountry ||

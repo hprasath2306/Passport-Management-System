@@ -1,5 +1,6 @@
 package com.pms.passport_visa_service.Controller;
 
+import com.pms.passport_visa_service.Dto.StatusUpdateRequest;
 import com.pms.passport_visa_service.Entity.PassportApplication;
 import com.pms.passport_visa_service.Service.PassportApplicationService;
 import jakarta.validation.Valid;
@@ -51,8 +52,12 @@ public class PassportApplicationController {
     @PutMapping("/status/{applicationId}")
     @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<?> updateStatus(@PathVariable Integer applicationId,
-                                          @RequestParam PassportApplication.ApplicationStatus status) {
-        PassportApplication updatedApplication = passportService.updateApplicationStatus(applicationId, status);
+                                          @Valid @RequestBody StatusUpdateRequest statusRequest) {
+        PassportApplication updatedApplication = passportService.updateApplicationStatus(
+                applicationId,
+                statusRequest.getStatus(),
+                statusRequest.getCancellationComment()
+        );
         return new ResponseEntity<>(updatedApplication, HttpStatus.OK);
     }
 }

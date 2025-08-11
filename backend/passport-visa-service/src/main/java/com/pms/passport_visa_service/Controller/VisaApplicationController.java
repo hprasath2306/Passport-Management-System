@@ -1,7 +1,9 @@
 package com.pms.passport_visa_service.Controller;
 
+import com.pms.passport_visa_service.Dto.VisaStatusUpdateRequest;
 import com.pms.passport_visa_service.Entity.VisaApplication;
 import com.pms.passport_visa_service.Service.VisaApplicationService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -43,10 +45,15 @@ public class VisaApplicationController {
 
     @PutMapping("/{visaId}/status")
     @PreAuthorize("hasAuthority('ADMIN')")
-    public ResponseEntity<VisaApplication> updateVisaStatus(@PathVariable String visaId, @RequestParam VisaApplication.ApplicationStatus status) {
-        VisaApplication updatedVisa = visaApplicationService.updateVisaStatus(visaId, status);
+    public ResponseEntity<VisaApplication> updateVisaStatus(
+            @PathVariable String visaId,
+            @Valid @RequestBody VisaStatusUpdateRequest statusRequest) {
+        VisaApplication updatedVisa = visaApplicationService.updateVisaStatus(
+                visaId,
+                statusRequest.getStatus(),
+                statusRequest.getCancellationComment()
+        );
         return new ResponseEntity<>(updatedVisa, HttpStatus.OK);
-
     }
 
     @GetMapping("/all")

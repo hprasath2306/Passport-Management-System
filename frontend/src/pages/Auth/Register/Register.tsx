@@ -19,7 +19,7 @@ export default function RegisterForm() {
     state: "",
     city: "",
     pincode: "",
-    occupation: "PRIVATE_EMPLOYEE",
+    occupation: "",
     registrationType: "PASSPORT",
   });
 
@@ -32,7 +32,7 @@ export default function RegisterForm() {
   const [success, setSuccess] = useState(false);
   const [customerId, setCustomerId] = useState<string | null>(null);
 
-  const {register} = useAuth();
+  const { register } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -110,16 +110,21 @@ export default function RegisterForm() {
     setIsLoading(true);
     try {
       const res = await register(formData);
+      console.log("Registration response:", res);
       if (res) {
         setSuccess(true);
         setCustomerId(res.customerId!);
       }
     } catch (err: any) {
-      setError("Registration failed. Please try again.");
+      setError(
+        err.message || "Registration failed. Please try again."
+      );
+
+    } finally {
+      setIsLoading(false);
     }
-    setIsLoading(false);
   };
-  
+
   if (success) {
     return (
       <div className="auth-container">
@@ -128,7 +133,7 @@ export default function RegisterForm() {
             <Shield className="auth-logo" />
             <h1 className="auth-title">Registration Successful!</h1>
             <p className="auth-subtitle">
-              Account created successfully. 
+              Account created successfully.
               <br></br>
               <b>Customer Id: {customerId}</b>
             </p>
@@ -151,12 +156,6 @@ export default function RegisterForm() {
         </div>
 
         <form onSubmit={handleSubmit} className="auth-form">
-          {error && (
-            <div className="error-message">
-              <AlertCircle size={16} />
-              {error}
-            </div>
-          )}
 
           <div className="form-row">
             <div className="form-group">
@@ -355,7 +354,22 @@ export default function RegisterForm() {
               <p>* Please fix the validation errors before submitting</p>
             </div>
           )}
+
+          {error && (
+            <div className="error-message">
+              <AlertCircle size={16} />
+              {error}
+            </div>
+          )}
         </form>
+        <div className="auth-footer">
+          <p>
+            Already have an account?{" "}
+            <button onClick={() => navigate("/login")} className="auth-link">
+              Sign in here
+            </button>
+          </p>
+        </div>
       </div>
     </div>
   );

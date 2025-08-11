@@ -14,7 +14,9 @@ public interface VisaApplicationService {
 
     List<VisaApplication> getVisasByPassportNumber(String passportNumber);
 
-    VisaApplication updateVisaStatus(String visaId, VisaApplication.ApplicationStatus status);
+    VisaApplication updateVisaStatus(String visaId,
+                                     VisaApplication.ApplicationStatus status,
+                                     String cancellationComment);
 
     List<VisaApplication> getAllVisaApplications();
 

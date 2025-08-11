@@ -12,5 +12,6 @@ public interface PassportApplicationService {
     ResponseEntity<Optional<PassportApplication>> getPassportByUserId(String userId);
     List<PassportApplication> getAllApplications();
     PassportApplication getPassportById(String passportId);
-    PassportApplication updateApplicationStatus(Integer applicationId, PassportApplication.ApplicationStatus status);
-}
+    PassportApplication updateApplicationStatus(Integer applicationId,
+                                                PassportApplication.ApplicationStatus status,
+                                                String cancellationComment);}

@@ -156,9 +156,22 @@ public class PassportApplicationServiceImpl implements PassportApplicationServic
     }
 
     @Override
-    public PassportApplication updateApplicationStatus(Integer applicationId, PassportApplication.ApplicationStatus status) {
+    public PassportApplication updateApplicationStatus(Integer applicationId,
+                                                       PassportApplication.ApplicationStatus status,
+                                                       String cancellationComment) {
         PassportApplication application = repository.findById(applicationId)
                 .orElseThrow(() -> new RuntimeException("Application not found: " + applicationId));
+
+        // Validate cancellation comment if status is CANCELLED
+        if (status == PassportApplication.ApplicationStatus.CANCELLED) {
+            if (cancellationComment == null || cancellationComment.trim().isEmpty()) {
+                throw new RuntimeException("Cancellation comment is required when cancelling an application");
+            }
+            application.setCancellationComment(cancellationComment.trim());
+        } else {
+            // Clear cancellation comment if status is not CANCELLED
+            application.setCancellationComment(null);
+        }
 
         application.setStatus(status);
         return repository.save(application);

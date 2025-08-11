@@ -43,6 +43,24 @@ export const userService = {
     }
   },
 
+   async updatePassportStatus(applicationId: number, status: string, cancellationComment?: string) {
+    try {
+      const requestBody = {
+        status,
+        ...(cancellationComment && { cancellationComment })
+      };
+      
+      const response = await axiosInstance.put(
+        `/api/passport/status/${applicationId}`,
+        requestBody
+      );
+      return response.data;
+    } catch (error) {
+      console.error("Error updating passport status:", error);
+      throw error;
+    }
+  },
+
   async getVisasByUserId(userId: string) {
     try {
       const response = await axiosInstance.get(`/api/visa/user/${userId}`);

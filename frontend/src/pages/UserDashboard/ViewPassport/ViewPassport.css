@@ -415,3 +415,53 @@
     gap: 0.5rem;
   }
 }
+
+/* ViewPassport.css - Add these styles */
+
+.cancellation-alert {
+  background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+  border: 1px solid #f87171;
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 24px;
+  box-shadow: 0 4px 6px -1px rgba(248, 113, 113, 0.1);
+}
+
+.cancellation-alert .alert-content {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.cancellation-alert .alert-icon {
+  color: #dc2626;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.cancellation-alert .alert-text h4 {
+  color: #991b1b;
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0 0 8px 0;
+}
+
+.cancellation-alert .alert-text p {
+  color: #7f1d1d;
+  margin: 0 0 12px 0;
+  line-height: 1.5;
+}
+
+.cancellation-reason {
+  background: rgba(255, 255, 255, 0.7);
+  padding: 12px;
+  border-radius: 8px;
+  border-left: 4px solid #dc2626;
+  color: #7f1d1d;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.cancellation-reason strong {
+  color: #991b1b;
+}

@@ -15,11 +15,20 @@ export const adminService = {
 
   async updatePassportStatus(
     applicationId: number, 
-    status: string
+    status: string,
+    cancellationComment?: string
   ): Promise<PassportDetails> {
     try {
+      const requestBody = {
+        status,
+        ...(cancellationComment && { cancellationComment })
+      };
+
+      console.log('Updating passport status:', requestBody);
+
       const response = await axiosInstance.put(
-        `/api/passport/status/${applicationId}?status=${status}`
+        `/api/passport/status/${applicationId}?status=${status}`,
+        requestBody
       );
       return response.data;
     } catch (error) {
@@ -50,11 +59,18 @@ export const adminService = {
 
   async updateVisaStatus(
     visaId: string, 
-    status: string
+    status: string,
+    cancellationComment?: string
   ): Promise<AdminVisaApplication> {
     try {
+      const requestBody = {
+        status,
+        ...(cancellationComment && { cancellationComment })
+      };
+      
       const response = await axiosInstance.put(
-        `/api/visa/${visaId}/status?status=${status}`
+        `/api/visa/${visaId}/status`,
+        requestBody
       );
       return response.data;
     } catch (error) {

@@ -11,6 +11,7 @@ import {
   MapPin,
   RefreshCw,
   AlertTriangle,
+  XCircle,
 } from "lucide-react";
 import type { PassportDetails } from "../../../types/index";
 import {
@@ -37,11 +38,30 @@ export const ViewPassport: React.FC<ViewPassportProps> = ({
 }) => {
   const displayStatus = effectiveStatus || passportDetails.status;
   const isExpired = isPassportExpired(passportDetails.expiryDate || null);
+  const isCancelled = displayStatus === "CANCELLED";
 
   return (
     <div className="passport-details-container">
+      {/* Cancellation Alert for Cancelled Passports */}
+      {isCancelled && (
+        <div className="cancellation-alert">
+          <div className="alert-content">
+            <XCircle size={24} className="alert-icon" />
+            <div className="alert-text">
+              <h4>Passport Application Cancelled</h4>
+              <p>Your passport application has been cancelled by the admin.</p>
+              {passportDetails.cancellationComment && (
+                <div className="cancellation-reason">
+                  <strong>Reason:</strong> {passportDetails.cancellationComment}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Expiry Warning for Expired Passports */}
-      {isExpired && (
+      {isExpired && !isCancelled && (
         <div className="expiry-alert">
           <div className="alert-content">
             <AlertTriangle size={24} className="alert-icon" />

@@ -92,9 +92,23 @@ public class VisaApplicationServiceImpl implements VisaApplicationService {
     }
 
     @Override
-    public VisaApplication updateVisaStatus(String visaId, VisaApplication.ApplicationStatus status) {
+    public VisaApplication updateVisaStatus(String visaId,
+                                            VisaApplication.ApplicationStatus status,
+                                            String cancellationComment) {
         VisaApplication visa = visaApplicationRepository.findByVisaId(visaId)
                 .orElseThrow(() -> new RuntimeException("Visa not found with ID: " + visaId));
+
+        // Validate cancellation comment if status is CANCELLED
+        if (status == VisaApplication.ApplicationStatus.CANCELLED) {
+            if (cancellationComment == null || cancellationComment.trim().isEmpty()) {
+                throw new RuntimeException("Cancellation comment is required when cancelling a visa application");
+            }
+            visa.setCancellationComment(cancellationComment.trim());
+        } else {
+            // Clear cancellation comment if status is not CANCELLED
+            visa.setCancellationComment(null);
+        }
+
         visa.setStatus(status);
         return visaApplicationRepository.save(visa);
     }

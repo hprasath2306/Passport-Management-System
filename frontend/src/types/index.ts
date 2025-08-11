@@ -73,6 +73,7 @@ export interface PassportDetails {
   userPhone: string;
   userEmail: string;
   userCitizenType: string;
+  cancellationComment?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -95,6 +96,7 @@ export interface AdminVisaApplication {
   userPhone: string;
   userEmail: string;
   userOccupation: string;
+  cancellationComment?: string;
   createdAt: string;
   updatedAt: string;
 }

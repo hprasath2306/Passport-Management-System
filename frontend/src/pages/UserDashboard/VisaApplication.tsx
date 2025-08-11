@@ -27,7 +27,6 @@ const VisaApplication: React.FC<VisaApplicationProps> = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Visa type pricing (you can move this to a service or config)
   const visaPricing: Record<string, number> = {
     Tourist: 1500,
     Business: 2000,

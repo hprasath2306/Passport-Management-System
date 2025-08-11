@@ -75,6 +75,9 @@ public class PassportApplication {
     @Column(name = "user_citizen_type")
     private String userCitizenType;
 
+    @Column(name = "cancellation_comment", columnDefinition = "TEXT")
+    private String cancellationComment;
+
     @CreationTimestamp
     @Column(name = "created_at")
     private LocalDateTime createdAt;
@@ -103,6 +106,14 @@ public class PassportApplication {
 
     public void setPassportApplicationId(Integer passportApplicationId) {
         this.passportApplicationId = passportApplicationId;
+    }
+
+    public String getCancellationComment() {
+        return cancellationComment;
+    }
+
+    public void setCancellationComment(String cancellationComment) {
+        this.cancellationComment = cancellationComment;
     }
 
     public String getUserId() {
@@ -277,6 +288,7 @@ public class PassportApplication {
                 ", passportType=" + passportType +
                 ", applicationDate=" + applicationDate +
                 ", status=" + status +
+                ", cancellationComment='" + cancellationComment + '\'' +
                 ", amountPaid=" + amountPaid +
                 '}';
     }
