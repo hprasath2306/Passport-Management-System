@@ -28,7 +28,7 @@ const BookletTypeManagement: React.FC = () => {
   }, []);
 
   const handleEdit = (booklet: any) => {
-    setEditingId(booklet.id);
+    setEditingId(booklet.bookletTypeId);
     setFormData({
       pages: booklet.pages,
       idFormat: booklet.idFormat,
@@ -42,6 +42,8 @@ const BookletTypeManagement: React.FC = () => {
         await axiosInstance.put(`/api/booklet-types/${editingId}`, formData);
         setBooklets(booklets.map(b => b.id === editingId ? { ...b, ...formData } : b));
         setEditingId(null);
+        setShowAddForm(false);
+        window.location.reload();
       } catch (err) {
         setError('Failed to update booklet type.');
       }
@@ -68,6 +70,7 @@ const BookletTypeManagement: React.FC = () => {
       try {
         await axiosInstance.delete(`/api/booklet-types/${id}`);
         setBooklets(booklets.filter(b => b.id !== id));
+        window.location.reload();
       } catch (err) {
         setError('Failed to delete booklet type.');
       }
@@ -155,7 +158,7 @@ const BookletTypeManagement: React.FC = () => {
                 <td>
                   <div className="action-buttons">
                     <button className="btn-icon btn-edit" onClick={() => handleEdit(booklet)}>Edit</button>
-                    <button className="btn-icon btn-delete" onClick={() => handleDelete(booklet.id)}>Delete</button>
+                    <button className="btn-icon btn-delete" onClick={() => handleDelete(booklet.bookletTypeId)}>Delete</button>
                   </div>
                 </td>
               </tr>

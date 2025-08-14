@@ -32,7 +32,7 @@ const ServiceTypeManagement: React.FC = () => {
   }, []);
 
   const handleEdit = (service: any) => {
-    setEditingId(service.id);
+    setEditingId(service.serviceTypeId);
     setFormData({
       serviceName: service.serviceName,
       serviceCategory: service.serviceCategory,
@@ -49,6 +49,8 @@ const ServiceTypeManagement: React.FC = () => {
         await axiosInstance.put(`/api/service-types/${editingId}`, formData);
         setServices(services.map(s => s.id === editingId ? { ...s, ...formData } : s));
         setEditingId(null);
+        setShowAddForm(false);
+        window.location.reload();
       } catch (err) {
         setError('Failed to update service type.');
       }
@@ -74,6 +76,7 @@ const ServiceTypeManagement: React.FC = () => {
     if (window.confirm('Are you sure you want to delete this service type?')) {
       try {
         await axiosInstance.delete(`/api/service-types/${id}`);
+        window.location.reload();
         setServices(services.filter(s => s.id !== id));
       } catch (err) {
         setError('Failed to delete service type.');
@@ -204,7 +207,7 @@ const ServiceTypeManagement: React.FC = () => {
                 <td>
                   <div className="action-buttons">
                     <button className="btn-icon btn-edit" onClick={() => handleEdit(service)}>Edit</button>
-                    <button className="btn-icon btn-delete" onClick={() => handleDelete(service.id)}>Delete</button>
+                    <button className="btn-icon btn-delete" onClick={() => handleDelete(service.serviceTypeId)}>Delete</button>
                   </div>
                 </td>
               </tr>
