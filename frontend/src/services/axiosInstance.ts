@@ -16,3 +16,12 @@ axiosInstance.interceptors.request.use(
 );
 
 export default axiosInstance;
+
+
+
+/**
+ * 
+ * 3 methods - Fetch, axios etc etc
+ * fetch('some url').then(res) -> older
+ * 
+ */

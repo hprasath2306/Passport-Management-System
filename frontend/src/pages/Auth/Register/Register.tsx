@@ -68,7 +68,7 @@ export default function RegisterForm() {
   };
 
   const validateForm = () => {
-    const newErrors: { [key: string]: string } = {};
+    const newErrors: { [key: string]: string } = {}; //{a:b} Ankith P
 
     if (!formData.firstName.trim())
       newErrors.firstName = "First name is required";

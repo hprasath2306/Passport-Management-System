@@ -39,9 +39,9 @@ public class PassportApplicationServiceImpl implements PassportApplicationServic
 
     @Override
     public PassportApplication applyPassport(PassportApplication application) {
-        if (repository.existsByUserId(application.getUserId())) {
-            throw new RuntimeException("Passport already applied for this user");
-        }
+//        if (repository.existsByUserId(application.getUserId())) {
+//            throw new RuntimeException("Passport already applied for this user");
+//        }
 
         // Fetch user details from User microservice
         UserResponseDto userDetails = fetchUserDetails(application.getUserId());
@@ -135,7 +135,7 @@ public class PassportApplicationServiceImpl implements PassportApplicationServic
 
     @Override
     public ResponseEntity<Optional<PassportApplication>> getPassportByUserId(String userId) {
-        Optional<PassportApplication> passport = repository.findByUserId(userId);
+        Optional<PassportApplication> passport = repository.findTopByUserIdOrderByCreatedAtDesc(userId);
         if (passport.isPresent()) {
             return new ResponseEntity<>(passport, HttpStatus.OK);
         } else {

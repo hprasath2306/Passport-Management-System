@@ -6,7 +6,7 @@ import {
   FileText,
   Plus,
   XCircle,
-} from "lucide-react";
+} from "lucide-react";  
 import PassportApplication from "./PassportApplication";
 import VisaApplication from "./VisaApplication";
 import VisaCancellation from "./VisaCancellation/VisaCancellation";
@@ -128,7 +128,6 @@ const UserDashboard: React.FC = () => {
       visa.status === "ISSUED"
     );
   };
-
   return (
     <div className="dashboard">
       {loading ? (
@@ -220,7 +219,27 @@ const UserDashboard: React.FC = () => {
 
             {activeTab === "passport" && (
               <div className="passport-section">
-                {!passportDetails ? (
+                {passportDetails && passportDetails.status === "CANCELLED" && (
+                  <div className="cancellation-alert">
+                    <div className="alert-content">
+                      <XCircle size={24} className="alert-icon" />
+                      <div className="alert-text">
+                        <h4>Passport Application Cancelled</h4>
+                        <p>
+                          Your passport application has been cancelled by the
+                          admin.
+                        </p>
+                        {passportDetails.cancellationComment && (
+                          <div className="cancellation-reason">
+                            <strong>Reason:</strong>{" "}
+                            {passportDetails.cancellationComment}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
+                {!passportDetails || passportDetails?.status === "CANCELLED" ? (
                   <PassportApplication />
                 ) : (
                   <ViewPassport
@@ -339,11 +358,6 @@ const UserDashboard: React.FC = () => {
                             )}
                           </div>
                           <div className="application-actions">
-                            {application.status === "APPROVED" && (
-                              <button className="btn btn-outline">
-                                Download Visa
-                              </button>
-                            )}
                             {canCancelVisa(application) && (
                               <button
                                 className="btn btn-danger"

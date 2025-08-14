@@ -10,4 +10,5 @@ public interface PassportApplicationRepository extends JpaRepository<PassportApp
     Optional<PassportApplication> findByUserId(String userId);
     Optional<PassportApplication> findByPassportId(String passportId);
     boolean existsByUserId(String userId);
+    Optional<PassportApplication> findTopByUserIdOrderByCreatedAtDesc(String userId);
 }

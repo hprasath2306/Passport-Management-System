@@ -20,12 +20,6 @@ export const authService = {
   },
 
   async register(data: RegisterData): Promise<void> {
-    console.log("🚀 Starting request...");
-    console.log(
-      "URL:",
-      `${import.meta.env.VITE_BACKEND_URL}/api/auth/register`
-    );
-
     try {
       const response = await axiosInstance.post("/api/auth/register", data);
       return response.data;

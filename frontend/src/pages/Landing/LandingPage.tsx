@@ -9,6 +9,7 @@ import {
 import './LandingPage.css';
 import { useNavigate } from 'react-router-dom';
 
+
 const LandingPage = () => {
   const features = [
     {
@@ -50,6 +51,7 @@ const LandingPage = () => {
   ];
 
   const navigate = useNavigate();
+  
   return (
     <div className="landing-page">
       <header className="header">
