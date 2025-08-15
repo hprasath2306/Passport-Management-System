@@ -106,7 +106,7 @@ public class PassportApplicationServiceImpl implements PassportApplicationServic
 
         // Fetch ServiceType for renewal
         ServiceType serviceType = serviceTypeRepository
-                .findByPassportTypeAndServiceCategory(ServiceType.PassportType.RENEWAL, ServiceType.ServiceCategory.PASSPORT)
+                .findTopByPassportTypeAndServiceCategoryOrderByCreatedAtDesc(ServiceType.PassportType.RENEWAL, ServiceType.ServiceCategory.PASSPORT)
                 .orElseThrow(() -> new RuntimeException("No RENEWAL service type configured"));
 
         // Store previous passport ID

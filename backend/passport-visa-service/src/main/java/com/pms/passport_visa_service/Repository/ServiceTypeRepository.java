@@ -8,5 +8,5 @@ import java.util.Optional;
 
 @Repository
 public interface ServiceTypeRepository extends JpaRepository<ServiceType, Integer> {
-    Optional<ServiceType> findByPassportTypeAndServiceCategory(ServiceType.PassportType passportType, ServiceType.ServiceCategory serviceCategory);
+    Optional<ServiceType> findTopByPassportTypeAndServiceCategoryOrderByCreatedAtDesc(ServiceType.PassportType passportType, ServiceType.ServiceCategory serviceCategory);
 }
