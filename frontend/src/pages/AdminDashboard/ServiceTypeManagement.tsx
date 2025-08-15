@@ -76,8 +76,8 @@ const ServiceTypeManagement: React.FC = () => {
     if (window.confirm('Are you sure you want to delete this service type?')) {
       try {
         await axiosInstance.delete(`/api/service-types/${id}`);
-        window.location.reload();
         setServices(services.filter(s => s.id !== id));
+        window.location.reload();
       } catch (err) {
         setError('Failed to delete service type.');
       }
